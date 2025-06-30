@@ -1,3 +1,5 @@
+This project is a modified fork of [xmpp_plugin](https://github.com/vavadiyahiren/xmpp_plugin), originally licensed under the Apache License 2.0.
+
 # xmpp_plugin
 ![status workflow](https://github.com/florisgravendeel/xmpp_plugin/actions/workflows/main.yml/badge.svg)
 1. Connect to the xmpp server
