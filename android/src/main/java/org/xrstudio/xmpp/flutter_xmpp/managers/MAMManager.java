@@ -1,3 +1,5 @@
+// [The file has been modified by eKadence]
+
 package org.xrstudio.xmpp.flutter_xmpp.managers;
 
 import org.jivesoftware.smack.packet.Message;
@@ -6,7 +8,9 @@ import org.jivesoftware.smackx.mam.MamManager;
 import org.jxmpp.jid.Jid;
 import org.xrstudio.xmpp.flutter_xmpp.Connection.FlutterXmppConnection;
 import org.xrstudio.xmpp.flutter_xmpp.Utils.Utils;
-
+import org.jxmpp.jid.EntityBareJid;
+import org.jxmpp.jid.impl.JidCreate;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -23,6 +27,7 @@ public class MAMManager {
 
                 MamManager mamManager = MamManager.getInstanceFor(connection);
                 MamManager.MamQueryArgs.Builder queryArgs = MamManager.MamQueryArgs.builder();
+                queryArgs.queryLastPage();
 
                 if (requestBefore != null && !requestBefore.isEmpty()) {
                     long requestBeforets = Long.parseLong(requestBefore);
@@ -44,16 +49,20 @@ public class MAMManager {
                     }
 
                 }
-                userJid = Utils.getValidJid(userJid);
-
-                if (userJid != null && !userJid.isEmpty()) {
-                    Jid jid = Utils.getFullJid(userJid);
-                    queryArgs.limitResultsToJid(jid);
+                
+                if (userJid.contains("conference")) {
+                    EntityBareJid archiveJid = JidCreate.entityBareFrom(userJid);
+                    mamManager = MamManager.getInstanceFor(connection, archiveJid);
+                } else {
+                    if (userJid != null && !userJid.isEmpty()) {
+                        queryArgs.limitResultsToJid(JidCreate.from(userJid));
+                    }
                 }
 
                 Utils.printLog("MAM query Args " + queryArgs.toString());
                 org.jivesoftware.smackx.mam.MamManager.MamQuery query = mamManager.queryArchive(queryArgs.build());
                 List<Message> messageList = query.getMessages();
+                Collections.reverse(messageList);
 
                 for (Message message : messageList) {
                     Utils.printLog("Received Message " + message.toXML());

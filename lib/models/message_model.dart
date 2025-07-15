@@ -1,3 +1,5 @@
+// [The file has been modified by eKadence]
+
 class MessageChat {
   String? customText;
   String? from;
@@ -12,6 +14,7 @@ class MessageChat {
   int? isReadSent;
   String? delayTime;
   String? chatStateType;
+  String? subject;
 
   MessageChat({
     this.customText,
@@ -27,7 +30,10 @@ class MessageChat {
     this.isReadSent,
     this.delayTime,
     this.chatStateType,
+    this.subject,
   });
+
+  bool get hasSubject => subject != null && subject!.trim() != "";
 
   Map<String, dynamic> toEventData() {
     return {
@@ -44,6 +50,7 @@ class MessageChat {
       'isReadSent': isReadSent,
       'delayTime': delayTime,
       'chatStateType': chatStateType,
+      'subject': subject,
     };
   }
 
@@ -62,6 +69,7 @@ class MessageChat {
       mediaURL: eventData['mediaURL'] ?? '',
       delayTime: eventData['delayTime'] ?? '',
       chatStateType: eventData['chatStateType'] ?? '',
+      subject: (eventData['subject'] ?? "") == "" ? "" : "[[CHANGE_GROUP_NAME]]${eventData['subject'] ?? ""}[[/CHANGE_GROUP_NAME]]",
     );
   }
 }
