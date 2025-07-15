@@ -5,6 +5,14 @@ Modifications have been made to support custom features for specific project req
 
 Original License: Apache License 2.0
 
+## The files that modified by eKadence
+1. android/build.gradle
+2. android/src/main/java/org/xrstudio/xmpp/flutter_xmpp/Connection/FlutterXmppConnection.java
+3. android/src/main/java/org/xrstudio/xmpp/flutter_xmpp/FlutterXmppPlugin.java
+4. android/src/main/java/org/xrstudio/xmpp/flutter_xmpp/Utils/Constants.java
+5. android/src/main/java/org/xrstudio/xmpp/flutter_xmpp/Utils/Utils.java
+6. android/src/main/java/org/xrstudio/xmpp/flutter_xmpp/managers/MAMManager.java
+7. lib/models/message_model.dart
 
 # xmpp_plugin
 ![status workflow](https://github.com/florisgravendeel/xmpp_plugin/actions/workflows/main.yml/badge.svg)
