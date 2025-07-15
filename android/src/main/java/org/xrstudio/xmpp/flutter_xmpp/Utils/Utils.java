@@ -1,3 +1,5 @@
+// [The file has been modified by eKadence]
+
 package org.xrstudio.xmpp.flutter_xmpp.Utils;
 
 import android.content.Context;
@@ -7,6 +9,8 @@ import android.util.Log;
 
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smackx.forward.packet.Forwarded;
+import org.jivesoftware.smackx.mam.element.MamElements;
 import org.jivesoftware.smack.packet.StandardExtensionElement;
 import org.jivesoftware.smack.util.PacketParserUtils;
 import org.jivesoftware.smackx.chatstates.ChatState;
@@ -32,6 +36,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -211,7 +216,45 @@ public class Utils {
             }
         }
 
-        if (!from.equals(FlutterXmppConnection.mUsername)) {
+        String statusCode = "";
+        MamElements.MamResultExtension mamResult = MamElements.MamResultExtension.from(message);
+        if (mamResult != null)
+        {
+            Forwarded forwarded = mamResult.getForwarded();
+            if (forwarded != null) {
+                DelayInformation delayInfo = forwarded.getDelayInformation();
+                if (delayInfo != null) {
+                    delayTime = delayInfo.getStamp().toString();
+                }
+
+                Message fwdMessage = (Message) forwarded.getForwardedStanza();
+                if (body == null) {
+                    body = fwdMessage.getBody();
+                    from = fwdMessage.getFrom().toString();
+                }
+
+                if (msgId == null) {
+                    msgId = fwdMessage.getStanzaId();
+                }
+
+                statusCode = extractStatusCode(fwdMessage);
+            }
+        }
+        
+        String subject = extractSubject(message);
+
+        List<String> urls = extractUrlsFromMessage(message);
+        if (!urls.isEmpty()) {
+            mediaURL = String.join(",", urls);
+        }
+        
+        String mUser = FlutterXmppConnection.mUsername;
+        if (mUser != null && mUser.contains(Constants.SYMBOL_COMPARE_JID))
+        {
+            mUser = mUser.split(Constants.SYMBOL_COMPARE_JID)[0];
+        }
+        
+        if (!from.equals(mUser)) {
             //Bundle up the intent and send the broadcast.
             Intent intent = new Intent(Constants.RECEIVE_MESSAGE);
             intent.setPackage(mApplicationContext.getPackageName());
@@ -225,6 +268,8 @@ public class Utils {
             intent.putExtra(Constants.META_TEXT, META_TEXT);
             intent.putExtra(Constants.time, time);
             intent.putExtra(Constants.DELAY_TIME, delayTime);
+            intent.putExtra(Constants.STATUS_CODE, statusCode);
+            intent.putExtra(Constants.SUBJECT, subject);
             if (chatState != null) {
                 intent.putExtra(Constants.CHATSTATE_TYPE, chatState.toString().toLowerCase());
             }
@@ -288,5 +333,71 @@ public class Utils {
         intent.putExtra(Constants.BUNDLE_CONNECTION_TYPE, connectionState.toString());
         intent.putExtra(Constants.BUNDLE_CONNECTION_ERROR, errorMessage);
         mApplicationContext.sendBroadcast(intent);
+    }
+
+    public static List<String> extractUrlsFromMessage(Message message) {
+        List<String> urls = new ArrayList<String>();
+        String xml = message.toXML().toString();
+        String startTag = "<url";
+        String endTag = "</url>";
+        int currentIndex = 0;
+
+        while (true) {
+            int start = xml.indexOf(startTag, currentIndex);
+            if (start == -1) break;
+
+            int startClose = xml.indexOf(">", start);
+            int end = xml.indexOf(endTag, startClose);
+            if (startClose != -1 && end != -1 && startClose < end) {
+                String url = xml.substring(startClose + 1, end).trim();
+                if (!url.isEmpty()) {
+                    urls.add(url);
+                    Utils.printLog("Found URL: " + url);
+                }
+                currentIndex = end + endTag.length(); // Move past this tag
+            } else {
+                break; // Invalid tag structure
+            }
+        }
+
+        return urls;
+    }
+
+    public static String extractStatusCode(Message message) {
+        String xml = message.toXML().toString();
+        String startTag = "<status code='";
+        
+        int start = xml.indexOf(startTag);
+        
+        if (start != -1) {
+            int startClose = xml.indexOf("'", start);
+            if (startClose != -1) {
+                String code = xml.substring(startClose + 1, startClose + 5).trim();
+                Utils.printLog("Found status code: " + code);
+                return code;
+            }
+        }
+
+        return "";
+    }
+
+    public static String extractSubject(Message message) {
+        String xml = message.toXML().toString();
+        String startTag = "<subject>";
+        String endTag = "</subject>";
+        
+        int start = xml.indexOf(startTag);
+        int end = xml.indexOf(endTag);
+        
+        if (start != -1 && end != -1) {
+            int startClose = xml.indexOf(">", start);
+            if (startClose != -1 && startClose < end) {
+                String subject = xml.substring(startClose + 1, end).trim();
+                Utils.printLog("Found subject: " + subject);
+                return subject;
+            }
+        }
+
+        return null;
     }
 }

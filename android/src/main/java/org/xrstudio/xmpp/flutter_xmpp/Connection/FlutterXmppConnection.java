@@ -1,3 +1,5 @@
+// [The file has been modified by eKadence]
+
 package org.xrstudio.xmpp.flutter_xmpp.Connection;
 
 import android.content.BroadcastReceiver;
@@ -89,7 +91,8 @@ public class FlutterXmppConnection implements ConnectionListener {
         mAutomaticReconnection = automaticReconnection;
         if (jid_user != null && jid_user.contains(Constants.SYMBOL_COMPARE_JID)) {
             String[] jid_list = jid_user.split(Constants.SYMBOL_COMPARE_JID);
-            mUsername = jid_list[0];
+            // mUsername = jid_list[0];
+            mUsername = jid_user;
             if (jid_list[1].contains(Constants.SYMBOL_FORWARD_SLASH)) {
                 String[] domain_resource = jid_list[1].split(Constants.SYMBOL_FORWARD_SLASH);
                 mServiceName = domain_resource[0];
@@ -283,7 +286,7 @@ public class FlutterXmppConnection implements ConnectionListener {
         long userLastActivity = Constants.RESULT_DEFAULT;
         try {
             LastActivityManager lastActivityManager = LastActivityManager.getInstanceFor(mConnection);
-            LastActivity lastActivity = lastActivityManager.getLastActivity(JidCreate.from(Utils.getJidWithDomainName(userJid, mHost)));
+            LastActivity lastActivity = lastActivityManager.getLastActivity(JidCreate.from(userJid));
             userLastActivity = lastActivity.lastActivity;
         } catch (Exception e) {
             e.printStackTrace();
@@ -322,19 +325,22 @@ public class FlutterXmppConnection implements ConnectionListener {
 
             MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(Utils.getRoomIdWithDomainName(groupName, mHost)));
             multiUserChat.create(Resourcepart.from(mUsername));
-
-//            if (persistent.equals(Constants.TRUE)) {
-//                Form form = multiUserChat.getConfigurationForm();
-//                Form answerForm = form.createAnswerForm();
-//                answerForm.setAnswer(Constants.MUC_PERSISTENT_ROOM, true);
-//                answerForm.setAnswer(Constants.MUC_MEMBER_ONLY, true);
-//                multiUserChat.sendConfigurationForm(answerForm);
-//            }
+            
             if (persistent.equals(Constants.TRUE)) {
                 Form form = multiUserChat.getConfigurationForm();
                 FillableForm answerForm = form.getFillableForm();
                 answerForm.setAnswer(Constants.MUC_PERSISTENT_ROOM, true);
                 answerForm.setAnswer(Constants.MUC_MEMBER_ONLY, true);
+                answerForm.setAnswer(Constants.MUC_PUBLIC_ROOM, true);
+                answerForm.setAnswer(Constants.MUC_PUBLIC_LIST, true);
+                answerForm.setAnswer(Constants.MUC_MODERATED_ROOM, true);
+                answerForm.setAnswer(Constants.MUC_MEMBER_DEFAULT, true);
+                answerForm.setAnswer(Constants.MUC_CHANGE_SUBJECT, true);
+                answerForm.setAnswer(Constants.MUC_QUERY_USERS, true);
+                answerForm.setAnswer(Constants.MUC_VISITOR_STATUS, true);
+                answerForm.setAnswer(Constants.MUC_VISITOR_NICK_CHANGE, true);
+                answerForm.setAnswer(Constants.MUC_VOICE_REQUEST, true);
+                answerForm.setAnswer(Constants.MUC_MAM, true);
                 multiUserChat.sendConfigurationForm(answerForm);
             }
 
@@ -373,7 +379,7 @@ public class FlutterXmppConnection implements ConnectionListener {
                 long diff = currentTime - lastMessageTime;
 
                 MucEnterConfiguration mucEnterConfiguration = multiUserChat.getEnterConfigurationBuilder(resourcepart)
-                        .requestHistorySince((int) diff)
+                        .requestMaxStanzasHistory(0)
                         .build();
 
                 if (!multiUserChat.isJoined()) {
@@ -405,17 +411,16 @@ public class FlutterXmppConnection implements ConnectionListener {
                 lastMsgTime = groupData[1];
             }
 
-            MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(Utils.getRoomIdWithDomainName(groupName, mHost)));
+            MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(groupId));
             Resourcepart resourcepart = Resourcepart.from(mUsername);
 
             long currentTime = new Date().getTime();
-//            long lastMessageTime = Long.valueOf(lastMsgTime);
             long lastMessageTime = Long.parseLong(lastMsgTime);
             long diff = currentTime - lastMessageTime;
 
             MucEnterConfiguration mucEnterConfiguration = multiUserChat.getEnterConfigurationBuilder(resourcepart)
-                    .requestHistorySince((int) diff)
-                    .build();
+            .requestMaxStanzasHistory(0)
+            .build();
 
             if (!multiUserChat.isJoined()) {
                 multiUserChat.join(mucEnterConfiguration);

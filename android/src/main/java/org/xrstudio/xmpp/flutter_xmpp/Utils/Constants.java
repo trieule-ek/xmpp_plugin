@@ -1,3 +1,5 @@
+// [The file has been modified by eKadence]
+
 package org.xrstudio.xmpp.flutter_xmpp.Utils;
 
 public class Constants {
@@ -99,6 +101,18 @@ public class Constants {
     public static final String USER_STREAM_MANAGEMENT = "useStreamManagement";
     public static final String AUTOMATIC_RECONNECTION = "automaticReconnection";
     public static final String MUC_PERSISTENT_ROOM = "muc#roomconfig_persistentroom";
+    public static final String MUC_CONFIG_MAM = "muc#roomconfig_mam";
+    
+    public static final String MUC_PUBLIC_ROOM = "muc#roomconfig_publicroom";
+    public static final String MUC_PUBLIC_LIST = "public_list";
+    public static final String MUC_MODERATED_ROOM = "muc#roomconfig_moderatedroom";
+    public static final String MUC_MEMBER_DEFAULT = "members_by_default";
+    public static final String MUC_CHANGE_SUBJECT = "muc#roomconfig_changesubject";
+    public static final String MUC_QUERY_USERS = "allow_query_users";
+    public static final String MUC_VISITOR_STATUS = "allow_visitor_status";
+    public static final String MUC_VISITOR_NICK_CHANGE = "allow_visitor_nickchange";
+    public static final String MUC_VOICE_REQUEST = "allow_voice_requests";
+    public static final String MUC_MAM = "mam";
 
     // Broadcast Parameters
     public static final String GROUP_NAME = "group_name";
@@ -135,6 +149,9 @@ public class Constants {
     public static final String BUNDLE_TO = "b_to";
     public static final String GROUP_IDS = "group_ids";
     public static final String MEDIA_URL = "media_url";
+    public static final String MEDIA__URL = "mediaURL";
+    public static final String STATUS_CODE = "status_code";
+    public static final String SUBJECT = "subject";
     public static final String META_TEXT = "meta_text";
     public static final String CHATSTATE_TYPE = "chatStateType";
     public static final String BUNDLE_TO_JID = "c_from";

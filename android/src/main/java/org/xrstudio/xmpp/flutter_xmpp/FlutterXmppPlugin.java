@@ -1,3 +1,5 @@
+// [The file has been modified by eKadence]
+
 package org.xrstudio.xmpp.flutter_xmpp;
 
 import android.content.BroadcastReceiver;
@@ -5,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
+import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 
@@ -90,6 +93,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
 
                     // Handle receiving message events.
                     case Constants.RECEIVE_MESSAGE:
+                        Bundle extras = intent.getExtras();
 
                         String from = intent.getStringExtra(Constants.BUNDLE_FROM_JID);
                         String body = intent.getStringExtra(Constants.BUNDLE_MESSAGE_BODY);
@@ -100,7 +104,10 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         String senderJid = intent.hasExtra(Constants.BUNDLE_MESSAGE_SENDER_JID) ? intent.getStringExtra(Constants.BUNDLE_MESSAGE_SENDER_JID) : "";
                         String time = intent.hasExtra(Constants.time) ? intent.getStringExtra(Constants.time) : Constants.ZERO;
                         String chatStateType = intent.hasExtra(Constants.CHATSTATE_TYPE) ? intent.getStringExtra(Constants.CHATSTATE_TYPE) : Constants.EMPTY;
-                        String delayTime = intent.hasExtra(Constants.DELAY_TIME) ? intent.getStringExtra(Constants.DELAY_TIME) : Constants.ZERO;
+                        String delayTime = extras != null ? (String)extras.get(Constants.DELAY_TIME) : Constants.ZERO;
+                        String mediaURL = extras != null ? (String)extras.get(Constants.MEDIA_URL) : "";
+                        String statusCode = extras != null ? (String)extras.get(Constants.STATUS_CODE) : "";
+                        String subject = extras != null ? (String)extras.get(Constants.SUBJECT) : "";
 
                         Map<String, Object> build = new HashMap<>();
                         build.put(Constants.TYPE, metaInfo);
@@ -113,6 +120,9 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         build.put(Constants.time, time);
                         build.put(Constants.CHATSTATE_TYPE, chatStateType);
                         build.put(Constants.DELAY_TIME, delayTime);
+                        build.put(Constants.MEDIA__URL, mediaURL);
+                        build.put(Constants.STATUS_CODE, statusCode);
+                        build.put(Constants.SUBJECT, subject);
 
                         Utils.addLogInStorage("Action: sentMessageToFlutter, Content: " + build.toString());
                         Log.d("TAG", " RECEIVE_MESSAGE-->> " + build.toString());
@@ -774,7 +784,8 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
     // login
     private void doLogin() {
         // Check if the user is already connected or not ? if not then start login process.
-        if (FlutterXmppConnectionService.getState().equals(ConnectionState.DISCONNECTED)) {
+        final ConnectionState connState = FlutterXmppConnectionService.getState();
+        if (connState.equals(ConnectionState.DISCONNECTED) || connState.equals(ConnectionState.FAILED)) {
             Intent i = new Intent(activity, FlutterXmppConnectionService.class);
             i.putExtra(Constants.JID_USER, jid_user);
             i.putExtra(Constants.PASSWORD, password);
