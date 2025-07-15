@@ -5,7 +5,7 @@ Modifications have been made to support custom features for specific project req
 
 Original License: Apache License 2.0
 
-## The files that modified by eKadence
+## The files have been modified by eKadence.
 1. android/build.gradle
 2. android/src/main/java/org/xrstudio/xmpp/flutter_xmpp/Connection/FlutterXmppConnection.java
 3. android/src/main/java/org/xrstudio/xmpp/flutter_xmpp/FlutterXmppPlugin.java
