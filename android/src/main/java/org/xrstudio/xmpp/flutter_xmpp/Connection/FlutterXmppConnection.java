@@ -187,12 +187,9 @@ public class FlutterXmppConnection implements ConnectionListener {
         try {
 
             List<Jid> jidList = new ArrayList<>();
-            MultiUserChat muc = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(Utils.getRoomIdWithDomainName(groupName, mHost)));
+            MultiUserChat muc = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(groupName));
 
             for (String memberJid : membersJid) {
-                if (!memberJid.contains(mHost)) {
-                    memberJid = memberJid + Constants.SYMBOL_COMPARE_JID + mHost;
-                }
                 Jid jid = JidCreate.from(memberJid);
                 jidList.add(jid);
 
@@ -340,6 +337,7 @@ public class FlutterXmppConnection implements ConnectionListener {
                 answerForm.setAnswer(Constants.MUC_VISITOR_STATUS, true);
                 answerForm.setAnswer(Constants.MUC_VISITOR_NICK_CHANGE, true);
                 answerForm.setAnswer(Constants.MUC_VOICE_REQUEST, true);
+                answerForm.setAnswer(Constants.MUC_ALLOW_SUBSCRIPTION, true);  // allow_subscription
                 answerForm.setAnswer(Constants.MUC_MAM, true);
                 multiUserChat.sendConfigurationForm(answerForm);
             }
@@ -370,13 +368,8 @@ public class FlutterXmppConnection implements ConnectionListener {
                     lastMsgTime = groupData[1];
                 }
 
-                MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(Utils.getRoomIdWithDomainName(groupName, mHost)));
+                MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(groupName));
                 Resourcepart resourcepart = Resourcepart.from(mUsername);
-
-                long currentTime = new Date().getTime();
-//                long lastMessageTime = Long.valueOf(lastMsgTime);
-                long lastMessageTime = Long.parseLong(lastMsgTime);
-                long diff = currentTime - lastMessageTime;
 
                 MucEnterConfiguration mucEnterConfiguration = multiUserChat.getEnterConfigurationBuilder(resourcepart)
                         .requestMaxStanzasHistory(0)
