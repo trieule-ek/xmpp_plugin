@@ -112,6 +112,7 @@ public class Constants {
     public static final String MUC_VISITOR_STATUS = "allow_visitor_status";
     public static final String MUC_VISITOR_NICK_CHANGE = "allow_visitor_nickchange";
     public static final String MUC_VOICE_REQUEST = "allow_voice_requests";
+    public static final String MUC_ALLOW_SUBSCRIPTION = "allow_subscription";
     public static final String MUC_MAM = "mam";
 
     // Broadcast Parameters
