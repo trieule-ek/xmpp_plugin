@@ -32,9 +32,11 @@ extension XMPPController {
         }
         /// Custom Element
         var isCustom : Bool = false
-        if let ele = self.getCustomELE(withElementName: customElement) {
-            xmppMessage.addChild(ele)
-            isCustom = true
+        if !customElement.isEmpty {
+            if let ele = self.getCustomELE(withElementName: customElement) {
+                xmppMessage.addChild(ele)
+                isCustom = true
+            }
         }
         
         if xmpp_AutoDeliveryReceipt {

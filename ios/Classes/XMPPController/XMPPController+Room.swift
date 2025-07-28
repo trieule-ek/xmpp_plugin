@@ -19,7 +19,7 @@ extension XMPPController : XMPPRoomDelegate {
                 sendMUCCreateStatus(false)
                 return
             }
-            guard let roomJID = XMPPJID(string: getXMPPRoomJidName(withRoomName: roomName, withStrem: withStrem)) else {
+            guard let roomJID = XMPPJID(string: roomName) else {
                 print("\(#function) | Invalid XMPPRoom Jid: \(roomName)")
                 
                 sendMUCCreateStatus(false)
@@ -50,21 +50,21 @@ extension XMPPController : XMPPRoomDelegate {
         }
     }
     
-    func joinRoom(roomName: String, time : Int64, withStrem : XMPPStream){
+    func joinRoom(roomName: String, withStrem : XMPPStream){
         if roomName.trim().isEmpty {
             print("\(#function) | roomName nil/empty")
             sendMUCJoinStatus(false,roomName, "Roomname can't be empty")
             return
         }
         
-        let vUserId : String = self.getUserId(usingXMPPStream: withStrem)
+        let vUserId : String = withStrem.myJID?.description ?? ""
         if vUserId.isEmpty {
             print("\(#function) | XMPP UserId is nil/empty")
             
             sendMUCJoinStatus(false,roomName,"User Id Can't be empty")
             return
         }
-        guard let xmppJID = XMPPJID(string: getXMPPRoomJidName(withRoomName: roomName, withStrem: withStrem)) else {
+        guard let xmppJID = XMPPJID(string: roomName) else {
             print("\(#function) | Invalid XMPPRoom Jid: \(roomName)")
             
             sendMUCJoinStatus(false,roomName, "Invalid Room Name")
@@ -85,7 +85,7 @@ extension XMPPController : XMPPRoomDelegate {
         xmppRoom.addDelegate(self, delegateQueue: DispatchQueue.main)
         
         /// Get Message History. set value to return message.
-        let history = getXMPPRoomHistiry(withTime: time)
+        let history = getXMPPRoomHistiry(withTime: 0)
         xmppRoom.join(usingNickname: vUserId, history: history)
         
        // xmppRoom.fetchConfigurationForm()
@@ -105,11 +105,13 @@ extension XMPPController : XMPPRoomDelegate {
     func getXMPPRoomHistiry(withTime time : Int64) -> XMLElement {
         
         let history = XMLElement.init(name: "history")
-        //history.addAttribute(withName: "maxstanzas", stringValue: "1000") //Set Value to return number of message
+        history.addAttribute(withName: "maxstanzas", stringValue: "0") //Set Value to return number of message
+        history.addAttribute(withName: "maxchars", stringValue: "0")
+        history.addAttribute(withName: "since", stringValue: "1970-01-01T00:00:00Z")
         
         /// Time send in Second | Source:
         let currentTime : Int64 = Int64(NSDate().timeIntervalSince1970 * 1000)
-        let vTimeSecond : Int64 = (currentTime - time) / 1000
+        let vTimeSecond : Int64 = 0
         
         /// Send timestamp value to get message after send timestamp
         history.addAttribute(withName: "seconds", stringValue: vTimeSecond.description)
@@ -171,7 +173,7 @@ extension XMPPController : XMPPRoomDelegate {
     
     func xmppRoomDidJoin(_ sender: XMPPRoom) {
         var vRoom : String = ""
-        guard let value = sender.myRoomJID?.bareJID.user else {
+        guard let value = sender.myRoomJID?.bareJID else {
             print("\(#function) | XMPPRoom Joining Error | XMPPRoom-Name: \(vRoom)")
             sendMUCJoinStatus(false,vRoom,"Join Error ")
             return
@@ -205,37 +207,24 @@ extension XMPPController : XMPPRoomDelegate {
                 continue
             }
             switch roomProparty {
-            case "muc#roomconfig_persistentroom":
-                var defaultConfig : String = ""
-                if let ele = field.getElements(withKey: "value").first,
-                   let value = ele.getValue(withKey: "value") {
-                    defaultConfig = value
-                }
-                printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | defaultConfig: \(defaultConfig)")
-                
-                var isPersistentroom : Bool = default_isPersistent
-                if let objRoomInfo = self.arrGroups.first(where: { (obj) -> Bool in
-                    return obj.name == vRoomName
-                }) {
-                    isPersistentroom = objRoomInfo.isPersistent
-                    
-                    field.removeChild(at: 0)
-                    field.addChild(DDXMLElement(name: "value", stringValue: isPersistentroom ? "1" : "0"))
-                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
-                }
-                
-            case "muc#roomconfig_membersonly":
-                if let _ = self.arrGroups.first(where: { (obj) -> Bool in
-                    return obj.name == vRoomName
-                }) {
+                case "muc#roomconfig_persistentroom":
                     field.removeChild(at: 0)
                     field.addChild(DDXMLElement(name: "value", stringValue: "1"))
                     printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
-                }
-                
-            default:
-                printLog("\(#function) | XMPPRoom Configuration-var | \(roomProparty)")
-                break
+                    
+                case "muc#roomconfig_membersonly":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "1"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+
+                case "allow_subscription":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "1"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+                    
+                default:
+                    printLog("\(#function) | XMPPRoom Configuration-var | \(roomProparty)")
+                    break
             }
         }
         sender.configureRoom(usingOptions: newConfiguration)

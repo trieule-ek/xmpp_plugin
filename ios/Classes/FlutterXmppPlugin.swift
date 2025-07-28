@@ -153,7 +153,7 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
         let vHost : String = (vData["host"] as? String ?? "").trim()
         let vPort : String = (vData["port"] as? String ?? "0").trim()
         let vUserId : String = (vData["user_jid"] as? String ?? "").trim()
-        let vUserJid = (vUserId.components(separatedBy: "@").first ?? "").trim()
+        let vUserJid = vUserId.trim()
         
         var vResource : String = xmppConstants.Resource
         let arrResource = vUserId.components(separatedBy: "/")
@@ -314,19 +314,12 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
         printLog("\(#function) | \(vMethod) | arguments: \(vData)")
         
         let arrRooms = vData["all_groups_ids"] as? [String] ?? []
-        for vRoom  in arrRooms {
-            let arrRoomCompo : [String] = vRoom.components(separatedBy: ",")
-         //   if arrRoomCompo.count != 2 { continue }
-            
-            let vRoomName : String = arrRoomCompo.first ?? ""
-            let vRoomTS : String = arrRoomCompo.last ?? "0"
-            let vRoomTSLongFormat : Int64 = Int64(vRoomTS) ?? 0
-            
-            if !self.isValidMUCInfo(withRoomName: vRoomName, timeStamp: vRoomTSLongFormat) {
+        for vRoomName  in arrRooms {
+            if !self.isValidMUCInfo(withRoomName: vRoomName) {
                 result(false)
                 continue
             }
-            APP_DELEGATE.objXMPP.joinRoom(roomName: vRoomName, time: vRoomTSLongFormat, withStrem: self.objXMPP.xmppStream)
+            APP_DELEGATE.objXMPP.joinRoom(roomName: vRoomName, withStrem: self.objXMPP.xmppStream)
         }
         //result(xmppConstants.SUCCESS)
         result(true)
@@ -340,23 +333,15 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
         let vMethod : String = call.method.trim()
         printLog("\(#function) | \(vMethod) | arguments: \(vData)")
         
-        let vRoom = vData["group_id"] as? String ?? ""
-        let arrRoomCompo : [String] = vRoom.components(separatedBy: ",")
-        if arrRoomCompo.count != 2 {
-            result(false)
-            return
-        }
-        let vRoomName : String = arrRoomCompo.first ?? ""
-        let vRoomTS : String = arrRoomCompo.last ?? "0"
-        let vRoomTSLongFormat : Int64 = Int64(vRoomTS) ?? 0
+        let vRoomName = vData["group_id"] as? String ?? ""
         
-        if !self.isValidMUCInfo(withRoomName: vRoomName, timeStamp: vRoomTSLongFormat) {
+        if !self.isValidMUCInfo(withRoomName: vRoomName) {
             result(false)
             APP_DELEGATE.updateMUCJoinStatus(withRoomname: vRoomName, status: false, error : "Invalid Room Name")
             return
         }
         APP_DELEGATE.singalCallBack = result
-        APP_DELEGATE.objXMPP.joinRoom(roomName: vRoomName, time: vRoomTSLongFormat, withStrem: self.objXMPP.xmppStream)
+        APP_DELEGATE.objXMPP.joinRoom(roomName: vRoomName, withStrem: self.objXMPP.xmppStream)
         //result(true)
     }
     
@@ -610,6 +595,7 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
     func performXMPPConnectionActivity() {
         switch APP_DELEGATE.objXMPPConnStatus {
         case .None,
+             .Disconnect,
              .Failed:
             APP_DELEGATE.objXMPPConnStatus = .Processing
             do {
