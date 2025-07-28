@@ -34,6 +34,7 @@ class MessageChat {
   });
 
   bool get hasSubject => subject != null && subject!.trim() != "";
+  bool get isMAM => delayTime != null && delayTime!.trim() != "" && delayTime!.trim() != "0"; // 0 - Android | "" - iOS
 
   Map<String, dynamic> toEventData() {
     return {

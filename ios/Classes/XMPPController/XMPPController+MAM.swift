@@ -26,7 +26,11 @@ extension XMPPController {
         // Before
         if tsBefore > 0 {
             let date = Date(timeIntervalSince1970: Double(tsBefore)/1000.0)
-            let xmppDateString = date.xmppDateTimeString
+            let formatter = ISO8601DateFormatter()
+            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds] // Optional
+
+            let xmppDateString = formatter.string(from: date)
             
             let dateBefore = XMPPMessageArchiveManagement.field(withVar: "end",
                                                                 type: vType,
@@ -51,27 +55,32 @@ extension XMPPController {
         
         var jidString : String = jid
         let isEmptyJid : Bool = jid.trim().isEmpty
+        let isMUC : Bool = jidString.contains("conference")
         if !isEmptyJid {
-            let isFullJid : Bool = (jid.components(separatedBy: "@").count == 2)
-            if !isFullJid {
-                jidString = getJIDNameForUser(jid, withStrem: withStrem)
+                let aJIDField = XMPPMessageArchiveManagement.field(withVar: "with",
+                                                                type: nil,
+                                                                andValue: jidString)
+                fields.append(aJIDField)
             }
-            let aJIDField = XMPPMessageArchiveManagement.field(withVar: "with",
-                                                               type: nil,
-                                                               andValue: jidString)
-            fields.append(aJIDField)
         }
-        printLog("\(#function) | req mam: since \(tsSince) | JIDString: \(jidString) | Limit \(defaultLimit)")
   
-         let xmppRS : XMPPResultSet = XMPPResultSet(max: defaultLimit)
-         objXMPP.xmppMAM?.retrieveMessageArchive (at: nil, withFields: fields, with:xmppRS)
-       
+        let xmppRS : XMPPResultSet = XMPPResultSet(max: defaultLimit, before: "")
+        if isMUC {
+            if let mucJID = XMPPJID(string: jidString) {
+                objXMPP.xmppMAM?.retrieveMessageArchive (at: mucJID, withFields: fields, with:xmppRS)
+            }
+        } else {
+            objXMPP.xmppMAM?.retrieveMessageArchive (at: nil, withFields: fields, with:xmppRS)
+        }
     }
-    
+
     func manageMAMMessage(message: XMPPMessage) {
         printLog("\(#function) | Manange MAMMessage | message: \(message)")
+        guard let forwardedMessage = message.mamResult?.forwardedMessage else {
+            return
+        }
         
-        let vMessType : String = (message.type ?? xmppChatType.NORMAL).trim()
+        let vMessType : String = (forwardedMessage.type ?? xmppChatType.NORMAL).trim()
         switch vMessType {
         case xmppChatType.CHAT, xmppChatType.GROUPCHAT:
             self.handel_ChatMessage(message, withType: vMessType, withStrem: self.xmppStream)

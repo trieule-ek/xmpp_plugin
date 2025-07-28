@@ -220,7 +220,7 @@ extension XMPPController {
         //------------------------------------------------------------------------
         // Manange MAM Message
         if let objMessMAM = message.mamResult?.forwardedMessage  {
-            self.manageMAMMessage(message: objMessMAM)
+            self.manageMAMMessage(message: message)
             return
         }
 
