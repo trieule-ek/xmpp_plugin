@@ -12,7 +12,15 @@ Original License: Apache License 2.0
 4. android/src/main/java/org/xrstudio/xmpp/flutter_xmpp/Utils/Constants.java
 5. android/src/main/java/org/xrstudio/xmpp/flutter_xmpp/Utils/Utils.java
 6. android/src/main/java/org/xrstudio/xmpp/flutter_xmpp/managers/MAMManager.java
-7. lib/models/message_model.dart
+
+7. ios/Classes/FlutterXmppPlugin.swift
+8. ios/Classes/XMPPController/XMPPController+MAM.swift
+9. ios/Classes/XMPPController/XMPPController+Room.swift
+10. ios/Classes/XMPPController/XMPPController.swift
+11. ios/Classes/XMPPReceiveMessage.swift
+12. ios/Classes/XMPPSendMessage.swift
+
+13. lib/models/message_model.dart
 
 # xmpp_plugin
 ![status workflow](https://github.com/florisgravendeel/xmpp_plugin/actions/workflows/main.yml/badge.svg)
