@@ -7,6 +7,7 @@
 
 import Foundation
 import XMPPFramework
+import os.log
 
 //MARK: - MAM
 extension XMPPController {
@@ -31,6 +32,7 @@ extension XMPPController {
             formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds] // Optional
 
             let xmppDateString = formatter.string(from: date)
+            printLog("\(#function) | tsBefore: \(xmppDateString)")
             
             let dateBefore = XMPPMessageArchiveManagement.field(withVar: "end",
                                                                 type: vType,
@@ -57,6 +59,8 @@ extension XMPPController {
         let isEmptyJid : Bool = jid.trim().isEmpty
         let isMUC : Bool = jidString.contains("conference")
         if !isEmptyJid {
+            if !isMUC {
+                // For 1-to-1: Add 'with' field with the contact JID
                 let aJIDField = XMPPMessageArchiveManagement.field(withVar: "with",
                                                                 type: nil,
                                                                 andValue: jidString)
