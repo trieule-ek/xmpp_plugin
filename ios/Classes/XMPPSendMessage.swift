@@ -11,6 +11,7 @@ import XMPPFramework
 extension XMPPController {
     /// This method handles sending the message to one-one chat
     func sendMessage(messageBody:String,
+                     subject: String,
                      time:String,
                      reciverJID:String,
                      messageId: String,
@@ -24,7 +25,11 @@ extension XMPPController {
         let xmppMessage = XMPPMessage.init(type: vChatType.lowercased(), to: vJid)
         xmppMessage.addAttribute(withName: "xmlns", stringValue: "jabber:client")
         xmppMessage.addAttribute(withName: "id", stringValue: messageId)
-        xmppMessage.addBody(messageBody)
+        if (!subject.isEmpty && messageBody.isEmpty) {
+            xmppMessage.addSubject(subject)
+        } else {
+            xmppMessage.addBody(messageBody)
+        }
         
         /// Time
         if let eleTime = self.getTimeElement(withTime: time) {

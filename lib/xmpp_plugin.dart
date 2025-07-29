@@ -101,11 +101,13 @@ class XmppConnection {
 
   Future<String> sendGroupMessageWithType(String toJid,
       String body,
+      String subject,
       String id,
       int time,) async {
     final params = {
       "to_jid": toJid,
       "body": body,
+      "subject": subject,
       "id": id,
       "time": time.toString(),
     };
