@@ -40,6 +40,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
     private String id;
     private String time;
     private String body;
+    private String subject;
     private String to_jid;
     private String userJid;
     private String groupName;
@@ -175,7 +176,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
     }
 
     // Sending a message to one-one chat.
-    public static void sendMessage(String body, String toUser, String msgId, String method, String time) {
+    public static void sendMessage(String body, String toUser, String msgId, String method, String time, String subject) {
 
         if (FlutterXmppConnectionService.getState().equals(ConnectionState.AUTHENTICATED)) {
 
@@ -185,6 +186,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                 intent.putExtra(Constants.BUNDLE_TO, toUser);
                 intent.putExtra(Constants.BUNDLE_MESSAGE_PARAMS, msgId);
                 intent.putExtra(Constants.BUNDLE_MESSAGE_SENDER_TIME, time);
+                intent.putExtra(Constants.BUNDLE_SUBJECT, subject);
 
                 activity.sendBroadcast(intent);
             } else {
@@ -193,6 +195,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                 intent.putExtra(Constants.BUNDLE_TO, toUser);
                 intent.putExtra(Constants.BUNDLE_MESSAGE_PARAMS, msgId);
                 intent.putExtra(Constants.BUNDLE_MESSAGE_SENDER_TIME, time);
+                intent.putExtra(Constants.BUNDLE_SUBJECT, subject);
 
                 activity.sendBroadcast(intent);
             }
@@ -501,12 +504,13 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
             case Constants.SEND_MESSAGE:
             case Constants.SEND_GROUP_MESSAGE:
                 // Handle sending message.
-                if (!call.hasArgument(Constants.TO_JID) || !call.hasArgument(Constants.BODY) || !call.hasArgument(Constants.ID)) {
-                    result.error("MISSING", "Missing argument to_jid / body / id chat.", null);
+                if (!call.hasArgument(Constants.TO_JID) || !call.hasArgument(Constants.BODY) || !call.hasArgument(Constants.ID) || !call.hasArgument(Constants.SUBJECT)) {
+                    result.error("MISSING", "Missing argument to_jid / body / id chat / subject.", null);
                 }
 
                 to_jid = call.argument(Constants.TO_JID);
                 body = call.argument(Constants.BODY);
+                subject = call.argument(Constants.SUBJECT);
                 id = call.argument(Constants.ID);
                 time = Constants.ZERO;
 
@@ -514,7 +518,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                     time = call.argument(Constants.time);
                 }
 
-                sendMessage(body, to_jid, id, call.method, time);
+                sendMessage(body, to_jid, id, call.method, time, subject);
 
                 result.success(Constants.SUCCESS);
                 break;

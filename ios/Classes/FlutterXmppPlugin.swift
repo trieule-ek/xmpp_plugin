@@ -251,6 +251,7 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
         
         let toJid : String = (vData["to_jid"] as? String ?? "").trim()
         let body : String = vData["body"] as? String ?? ""
+        let subject : String = vData["subject"] as? String ?? ""
         let id : String = (vData["id"] as? String ?? "").trim()
         let time : String = (vData["time"] as? String ?? "0").trim()
         
@@ -260,6 +261,7 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
         }
         let isGroupMess : Bool = [pluginMethod.sendMessageInGroup, pluginMethod.sendCustomMessageInGroup].contains(vMethod)
         self.objXMPP.sendMessage(messageBody: body,
+                                 subject: subject,
                                  time: time,
                                  reciverJID: toJid,
                                  messageId: id,

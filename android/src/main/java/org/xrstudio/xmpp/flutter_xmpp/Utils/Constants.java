@@ -162,6 +162,7 @@ public class Constants {
     public static final String BUNDLE_PRESENCE_MODE = "b_presence_mode";
     public static final String BUNDLE_MESSAGE_TYPE = "b_body_type";
     public static final String BUNDLE_MESSAGE_PARAMS = "b_body_params";
+    public static final String BUNDLE_SUBJECT = "b_subject";
     public static final String BUNDLE_MESSAGE_SENDER_JID = "b_sender_jid";
     public static final String BUNDLE_MESSAGE_SENDER_TIME = "b_sender_time";
     public static final String X_CREATE_MUC = "org.xrstudio.xmpp.flutter_xmpp.createMUC";

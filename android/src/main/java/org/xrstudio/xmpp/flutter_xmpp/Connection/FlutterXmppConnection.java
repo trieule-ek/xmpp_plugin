@@ -574,7 +574,8 @@ public class FlutterXmppConnection implements ConnectionListener {
                             intent.getStringExtra(Constants.BUNDLE_TO),
                             intent.getStringExtra(Constants.BUNDLE_MESSAGE_PARAMS),
                             action.equals(Constants.X_SEND_MESSAGE),
-                            intent.getStringExtra(Constants.BUNDLE_MESSAGE_SENDER_TIME));
+                            intent.getStringExtra(Constants.BUNDLE_MESSAGE_SENDER_TIME),
+                            intent.getStringExtra(Constants.BUNDLE_SUBJECT));
 
                 }
             }
@@ -588,14 +589,13 @@ public class FlutterXmppConnection implements ConnectionListener {
 
     }
 
-    private void sendMessage(String body, String toJid, String msgId, boolean isDm, String time) {
+    private void sendMessage(String body, String toJid, String msgId, boolean isDm, String time, String subject) {
 
         try {
 
             Message xmppMessage = new Message();
             xmppMessage.setStanzaId(msgId);
 
-            xmppMessage.setBody(body);
             xmppMessage.setType(isDm ? Message.Type.chat : Message.Type.groupchat);
 
             StandardExtensionElement timeElement = StandardExtensionElement.builder(Constants.TIME, Constants.URN_XMPP_TIME)
@@ -624,7 +624,13 @@ public class FlutterXmppConnection implements ConnectionListener {
                 xmppMessage.setTo(jid);
                 EntityBareJid mucJid = (EntityBareJid) JidCreate.bareFrom(Utils.getRoomIdWithDomainName(toJid, mHost));
                 MultiUserChat muc = multiUserChatManager.getMultiUserChat(mucJid);
-                muc.sendMessage(body);
+                if (!subject.isEmpty()) {
+                    xmppMessage.setSubject(subject);
+                    muc.sendMessage(xmppMessage);
+                } else {
+                    xmppMessage.setBody(body);
+                    muc.sendMessage(body);
+                }
             }
 
             Utils.addLogInStorage("Action: sentMessageToServer, Content: " + xmppMessage.toXML().toString());
