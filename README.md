@@ -21,6 +21,7 @@ Original License: Apache License 2.0
 12. ios/Classes/XMPPSendMessage.swift
 
 13. lib/models/message_model.dart
+14. lib/xmpp_plugin.dart
 
 # xmpp_plugin
 ![status workflow](https://github.com/florisgravendeel/xmpp_plugin/actions/workflows/main.yml/badge.svg)
