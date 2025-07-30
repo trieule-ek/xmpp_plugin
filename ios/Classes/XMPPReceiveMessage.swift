@@ -71,18 +71,17 @@ extension XMPPController {
         // Parse the date
         let isoFormatter = ISO8601DateFormatter()
         isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        isoFormatter.timeZone = TimeZone(secondsFromGMT: 0)
 
         guard let date = isoFormatter.date(from: stamp) else {
             print("Invalid date format")
             return nil
         }
 
-        // Format Date to desired string in local timezone (e.g., GMT+7)
+        // Format Date to desired string in local timezone
         let displayFormatter = DateFormatter()
         displayFormatter.locale = Locale(identifier: "en_US_POSIX")
-        displayFormatter.timeZone = TimeZone(secondsFromGMT: 7 * 3600) // GMT+7
-        displayFormatter.dateFormat = "EEE MMM dd HH:mm:ss 'GMT+07:00' yyyy"
+        displayFormatter.timeZone = TimeZone.current
+        displayFormatter.dateFormat = "EEE MMM dd HH:mm:ss 'GMT+/-__:__' yyyy"
         
         return displayFormatter.string(from: date)
     }

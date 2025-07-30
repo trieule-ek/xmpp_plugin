@@ -412,6 +412,7 @@ public class FlutterXmppConnection implements ConnectionListener {
             long diff = currentTime - lastMessageTime;
 
             MucEnterConfiguration mucEnterConfiguration = multiUserChat.getEnterConfigurationBuilder(resourcepart)
+            .requestNoHistory()
             .requestMaxStanzasHistory(0)
             .build();
 
@@ -618,6 +619,7 @@ public class FlutterXmppConnection implements ConnectionListener {
 //            }
             if (isDm) {
                 xmppMessage.setTo(JidCreate.from(toJid));
+                xmppMessage.setBody(body);
                 mConnection.sendStanza(xmppMessage);
             } else {
                 EntityBareJid jid = JidCreate.entityBareFrom(toJid);
