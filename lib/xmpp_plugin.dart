@@ -79,6 +79,7 @@ class XmppConnection {
     final params = {
       "to_jid": toJid,
       "body": body,
+      "subject": "",
       "id": id,
       "time": time.toString(),
     };
@@ -91,6 +92,7 @@ class XmppConnection {
     final params = {
       "to_jid": toJid,
       "body": body,
+      "subject": "",
       "id": id,
       "time": time.toString(),
     };
