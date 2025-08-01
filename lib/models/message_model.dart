@@ -15,6 +15,7 @@ class MessageChat {
   String? delayTime;
   String? chatStateType;
   String? subject;
+  String? statusCode;
 
   MessageChat({
     this.customText,
@@ -31,6 +32,7 @@ class MessageChat {
     this.delayTime,
     this.chatStateType,
     this.subject,
+    this.statusCode,
   });
 
   bool get hasSubject => subject != null && subject!.trim() != "";
@@ -52,6 +54,7 @@ class MessageChat {
       'delayTime': delayTime,
       'chatStateType': chatStateType,
       'subject': subject,
+      'statusCode': statusCode
     };
   }
 
@@ -70,6 +73,7 @@ class MessageChat {
       mediaURL: eventData['mediaURL'] ?? '',
       delayTime: eventData['delayTime'] ?? '',
       chatStateType: eventData['chatStateType'] ?? '',
+      statusCode: eventData['statusCode'] ?? '',
       subject: (eventData['subject'] ?? "") == "" ? "" : "[[CHANGE_GROUP_NAME]]${eventData['subject'] ?? ""}[[/CHANGE_GROUP_NAME]]",
     );
   }

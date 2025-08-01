@@ -237,9 +237,10 @@ public class Utils {
                     msgId = fwdMessage.getStanzaId();
                 }
 
-                statusCode = extractStatusCode(fwdMessage);
             }
         }
+
+        statusCode = extractStatusCode(message);
         
         String subject = extractSubject(message);
 

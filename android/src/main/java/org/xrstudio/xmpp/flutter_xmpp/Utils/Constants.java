@@ -151,7 +151,7 @@ public class Constants {
     public static final String GROUP_IDS = "group_ids";
     public static final String MEDIA_URL = "media_url";
     public static final String MEDIA__URL = "mediaURL";
-    public static final String STATUS_CODE = "status_code";
+    public static final String STATUS_CODE = "statusCode";
     public static final String SUBJECT = "subject";
     public static final String META_TEXT = "meta_text";
     public static final String CHATSTATE_TYPE = "chatStateType";
