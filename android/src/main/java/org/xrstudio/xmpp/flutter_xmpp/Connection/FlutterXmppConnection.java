@@ -61,6 +61,11 @@ import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.jivesoftware.smackx.muc.packet.MUCUser;
+import org.jivesoftware.smackx.muc.packet.MUCUser.Status;
 
 public class FlutterXmppConnection implements ConnectionListener {
 
@@ -607,16 +612,6 @@ public class FlutterXmppConnection implements ConnectionListener {
                 DeliveryReceiptRequest.addTo(xmppMessage);
             }
 
-//            if (isDm) {
-//                xmppMessage.setTo(JidCreate.from(toJid));
-//                mConnection.sendStanza(xmppMessage);
-//            } else {
-//                EntityBareJid jid = JidCreate.entityBareFrom(toJid);
-//                xmppMessage.setTo(jid);
-//                EntityBareJid mucJid = (EntityBareJid) JidCreate.bareFrom(Utils.getRoomIdWithDomainName(toJid, mHost));
-//                MultiUserChat muc = multiUserChatManager.getMultiUserChat(mucJid);
-//                muc.sendMessage(xmppMessage);
-//            }
             if (isDm) {
                 xmppMessage.setTo(JidCreate.from(toJid));
                 xmppMessage.setBody(body);
@@ -630,8 +625,17 @@ public class FlutterXmppConnection implements ConnectionListener {
                     xmppMessage.setSubject(subject);
                     muc.sendMessage(xmppMessage);
                 } else {
+                    Integer statusCode = getStatusCodeValue(body);
+                    if (statusCode != 0) {
+                        Utils.printLog(" StandardExtensionElement got statusCode: " + statusCode);
+
+                        MUCUser mucUser = new MUCUser();
+                        mucUser.addStatusCode(MUCUser.Status.create(statusCode));
+                        xmppMessage.addExtension(mucUser);
+                    }
+                    
                     xmppMessage.setBody(body);
-                    muc.sendMessage(body);
+                    muc.sendMessage(xmppMessage);
                 }
             }
 
@@ -646,6 +650,25 @@ public class FlutterXmppConnection implements ConnectionListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static Integer getStatusCodeValue(String input) {
+        Pattern pattern = Pattern.compile("\\[\\[([^/][^\\]]+)\\]\\]");
+        Matcher matcher = pattern.matcher(input);
+        
+        if (matcher.find()) {
+            String stampName = matcher.group(1);
+            switch (stampName) {
+                case "CHANGE_GROUP_AVATAR"     : return 1111;
+                case "INVITE_MEMBER_TO_GROUP"  : return 1112;
+                case "LEAVE_CHAT_GROUP"        : return 1113;
+                case "REMOVE_MEMBER_FROM_GROUP": return 1114;
+                case "MAKE_MEMBER_BE_OWNER"    : return 1115;
+                case "REMOVE_AS_OWNER"         : return 1116;
+                default: return 0;
+            }
+        }
+        return 0;
     }
 
     public void disconnect() {
