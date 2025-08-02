@@ -33,6 +33,7 @@ extension XMPPController {
             return
         }
         let subject = extractSubject(from: message)
+        let statusCode = extractStatusCode(from: message)
         let urls = extractUrlsFromMessage(message)
         var mediaURL: String = ""
         if (!urls.isEmpty) {
@@ -51,6 +52,7 @@ extension XMPPController {
                        "delayTime" : stamp,
                        "subject": subject,
                        "mediaURL": mediaURL,
+                       "statusCode": statusCode,
                        "time" : objMess.time] as [String : Any]
         APP_DELEGATE.objEventData!(dicDate)
     }
@@ -92,6 +94,20 @@ extension XMPPController {
         }
         
         return subject.stringValue
+    }
+
+    func extractStatusCode(from message: XMPPMessage) -> String? {
+        let xmlString = message.xmlString(withOptions: 0)
+
+        let pattern = "<status[^>]*code=['\"](\\d+)['\"][^>]*/?>"
+        if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
+            let nsrange = NSRange(xmlString.startIndex..<xmlString.endIndex, in: xmlString)
+            if let match = regex.firstMatch(in: xmlString, options: [], range: nsrange),
+               let range = Range(match.range(at: 1), in: xmlString) {
+                return String(xmlString[range])
+            }
+        }
+        return nil
     }
     
     func handelNormalChatMessage(_ message: XMPPMessage, withStrem : XMPPStream) {
