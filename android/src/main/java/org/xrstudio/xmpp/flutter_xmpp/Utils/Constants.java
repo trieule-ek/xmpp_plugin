@@ -96,19 +96,21 @@ public class Constants {
     public static final String CHANNEL_STREAM = "flutter_xmpp/stream";
     public static final String DATE_FORMAT = "dd-MM-yyyy HH:mm:ss.SSS";
     public static final String AUTO_DELIVERY_RECEIPT = "autoDeliveryReceipt";
-    public static final String MUC_MEMBER_ONLY = "muc#roomconfig_membersonly";
     public static final String REQUIRE_SSL_CONNECTION = "requireSSLConnection";
     public static final String USER_STREAM_MANAGEMENT = "useStreamManagement";
     public static final String AUTOMATIC_RECONNECTION = "automaticReconnection";
-    public static final String MUC_PERSISTENT_ROOM = "muc#roomconfig_persistentroom";
     public static final String MUC_CONFIG_MAM = "muc#roomconfig_mam";
     
+    public static final String MUC_PERSISTENT_ROOM = "muc#roomconfig_persistentroom";
     public static final String MUC_PUBLIC_ROOM = "muc#roomconfig_publicroom";
     public static final String MUC_PUBLIC_LIST = "public_list";
+    public static final String MUC_ALLOW_WHOIS = "muc#roomconfig_whois";
+    public static final String MUC_MEMBER_ONLY = "muc#roomconfig_membersonly";
     public static final String MUC_MODERATED_ROOM = "muc#roomconfig_moderatedroom";
     public static final String MUC_MEMBER_DEFAULT = "members_by_default";
     public static final String MUC_CHANGE_SUBJECT = "muc#roomconfig_changesubject";
     public static final String MUC_QUERY_USERS = "allow_query_users";
+    public static final String MUC_ALLOW_INVITES = "muc#roomconfig_allowinvites";
     public static final String MUC_VISITOR_STATUS = "allow_visitor_status";
     public static final String MUC_VISITOR_NICK_CHANGE = "allow_visitor_nickchange";
     public static final String MUC_VOICE_REQUEST = "allow_voice_requests";

@@ -332,17 +332,19 @@ public class FlutterXmppConnection implements ConnectionListener {
                 Form form = multiUserChat.getConfigurationForm();
                 FillableForm answerForm = form.getFillableForm();
                 answerForm.setAnswer(Constants.MUC_PERSISTENT_ROOM, true);
-                answerForm.setAnswer(Constants.MUC_MEMBER_ONLY, true);
                 answerForm.setAnswer(Constants.MUC_PUBLIC_ROOM, true);
                 answerForm.setAnswer(Constants.MUC_PUBLIC_LIST, true);
+                answerForm.setAnswer(Constants.MUC_ALLOW_WHOIS, "anyone");
+                answerForm.setAnswer(Constants.MUC_MEMBER_ONLY, true);
                 answerForm.setAnswer(Constants.MUC_MODERATED_ROOM, true);
                 answerForm.setAnswer(Constants.MUC_MEMBER_DEFAULT, true);
                 answerForm.setAnswer(Constants.MUC_CHANGE_SUBJECT, true);
                 answerForm.setAnswer(Constants.MUC_QUERY_USERS, true);
+                answerForm.setAnswer(Constants.MUC_ALLOW_INVITES, true);
                 answerForm.setAnswer(Constants.MUC_VISITOR_STATUS, true);
                 answerForm.setAnswer(Constants.MUC_VISITOR_NICK_CHANGE, true);
                 answerForm.setAnswer(Constants.MUC_VOICE_REQUEST, true);
-                answerForm.setAnswer(Constants.MUC_ALLOW_SUBSCRIPTION, true);  // allow_subscription
+                answerForm.setAnswer(Constants.MUC_ALLOW_SUBSCRIPTION, false);  // allow_subscription
                 answerForm.setAnswer(Constants.MUC_MAM, true);
                 multiUserChat.sendConfigurationForm(answerForm);
             }
