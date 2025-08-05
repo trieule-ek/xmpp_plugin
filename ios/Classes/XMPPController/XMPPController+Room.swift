@@ -211,13 +211,73 @@ extension XMPPController : XMPPRoomDelegate {
                     field.removeChild(at: 0)
                     field.addChild(DDXMLElement(name: "value", stringValue: "1"))
                     printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
-                    
+
+                case "muc#roomconfig_publicroom":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "1"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+                
+                case "public_list":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "1"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+
+                case "muc#roomconfig_whois":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "anyone"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+
                 case "muc#roomconfig_membersonly":
                     field.removeChild(at: 0)
                     field.addChild(DDXMLElement(name: "value", stringValue: "1"))
                     printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
 
+                case "muc#roomconfig_moderatedroom":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "1"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+
+                case "members_by_default":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "1"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+
+                case "muc#roomconfig_changesubject":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "1"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+
+                case "allow_query_users":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "1"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+                    
+                case "muc#roomconfig_allowinvites":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "1"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+
+                case "allow_visitor_status":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "1"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+
+                case "allow_visitor_nickchange":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "1"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+
+                case "allow_voice_requests":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "1"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+
                 case "allow_subscription":
+                    field.removeChild(at: 0)
+                    field.addChild(DDXMLElement(name: "value", stringValue: "0"))
+                    printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
+
+                case "mam":
                     field.removeChild(at: 0)
                     field.addChild(DDXMLElement(name: "value", stringValue: "1"))
                     printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
