@@ -29,6 +29,11 @@ extension XMPPController {
             xmppMessage.addSubject(subject)
         } else {
             xmppMessage.addBody(messageBody)
+
+            let code = getStatusCodeValue(messageBody)
+            if !code.isEmpty, let eleStatus = getStatusCodeElement(withCode: code) {
+                xmppMessage.addChild(eleStatus)
+            }
         }
         
         /// Time
@@ -233,5 +238,43 @@ extension XMPPController {
         let ele: XMLElement = XMLElement.init(name: eleCustom.Name, xmlns: eleCustom.Namespace)
         ele.addChild(XMLElement.init(name: eleCustom.Kay, stringValue: name))
         return ele
+    }
+
+    private func getStatusCodeElement(withCode code :String) -> XMLElement? {
+        let xElement: XMLElement = XMLElement.init(name: "x", xmlns: "http://jabber.org/protocol/muc#user")
+
+        let statusElement = XMLElement.init(name: "status")
+        statusElement.addAttribute(withName: "code", stringValue: code)
+
+        xElement.addChild(statusElement)
+        
+        return xElement
+    }
+
+    func getStatusCodeValue(_ input: String) -> String {
+         let pattern = #"\[\[([A-Za-z0-9_]+)\]\](.*?)\[\[/\1\]\]"#
+
+        var tag : String = ""
+
+        do {
+            let regex = try NSRegularExpression(pattern: pattern)
+            let range = NSRange(input.startIndex..., in: input)
+
+            if let match = regex.firstMatch(in: input, range: range) {
+                if let tagRange = Range(match.range(at: 1), in: input) {
+                    tag = String(input[tagRange])
+                }
+            }
+        } catch { }
+        
+        switch (tag) {
+            case "CHANGE_GROUP_AVATAR"     : return "1111";
+            case "INVITE_MEMBER_TO_GROUP"  : return "1112";
+            case "LEAVE_CHAT_GROUP"        : return "1113";
+            case "REMOVE_MEMBER_FROM_GROUP": return "1114";
+            case "MAKE_MEMBER_BE_OWNER"    : return "1115";
+            case "REMOVE_AS_OWNER"         : return "1116";
+            default: return "";
+        }
     }
 }

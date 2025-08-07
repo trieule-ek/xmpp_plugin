@@ -629,8 +629,6 @@ public class FlutterXmppConnection implements ConnectionListener {
                 } else {
                     Integer statusCode = getStatusCodeValue(body);
                     if (statusCode != 0) {
-                        Utils.printLog(" StandardExtensionElement got statusCode: " + statusCode);
-
                         MUCUser mucUser = new MUCUser();
                         mucUser.addStatusCode(MUCUser.Status.create(statusCode));
                         xmppMessage.addExtension(mucUser);
