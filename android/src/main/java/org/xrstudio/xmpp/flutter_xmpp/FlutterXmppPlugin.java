@@ -51,6 +51,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
     private String password = "";
     private EventChannel event_channel;
     private ArrayList<String> membersJid;
+    private String memberJid;
     private MethodChannel method_channel;
     private EventChannel success_channel;
     private EventChannel error_channel;
@@ -656,6 +657,26 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                 membersJid = call.argument(Constants.MEMBERS_JID);
 
                 FlutterXmppConnection.manageAddMembersInGroup(GroupRole.OWNER, groupName, membersJid);
+
+                result.success(Constants.SUCCESS);
+                break;
+
+            case Constants.GRANT_OWNER_IN_GROUP:
+
+                groupName = call.argument(Constants.GROUP_NAME);
+                memberJid = call.argument(Constants.MEMBER_JID);
+
+                FlutterXmppConnection.grantOwnerInGroup(groupName, memberJid);
+
+                result.success(Constants.SUCCESS);
+                break;
+
+            case Constants.REVOKE_OWNER_IN_GROUP:
+
+                groupName = call.argument(Constants.GROUP_NAME);
+                memberJid = call.argument(Constants.MEMBER_JID);
+
+                FlutterXmppConnection.revokeOwnerInGroup(groupName, memberJid);
 
                 result.success(Constants.SUCCESS);
                 break;

@@ -204,14 +204,34 @@ public class FlutterXmppConnection implements ConnectionListener {
                 muc.grantAdmin(jidList);
             } else if (groupRole == GroupRole.MEMBER) {
                 muc.grantMembership(jidList);
-            } else if (groupRole == GroupRole.OWNER) {
-                muc.grantOwnership(jidList);
             }
 
             for (Jid jid : jidList) {
                 muc.invite(jid.asEntityBareJidIfPossible(), Constants.INVITE_MESSAGE);
             }
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void grantOwnerInGroup(String groupName, String memberJid) {
+        try {
+            MultiUserChat muc = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(groupName));
+
+            Jid jid = JidCreate.from(memberJid);
+            muc.grantOwnership(jid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void revokeOwnerInGroup(String groupName, String memberJid) {
+        try {
+            MultiUserChat muc = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(groupName));
+
+            Jid jid = JidCreate.from(memberJid);
+            muc.revokeOwnership(jid);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -230,7 +250,7 @@ public class FlutterXmppConnection implements ConnectionListener {
                 jidList.add(jid);
             }
 
-            MultiUserChat muc = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(Utils.getRoomIdWithDomainName(groupName, mHost)));
+            MultiUserChat muc = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(groupName));
             if (groupRole == GroupRole.ADMIN) {
 
                 for (Jid jid : jidList) {

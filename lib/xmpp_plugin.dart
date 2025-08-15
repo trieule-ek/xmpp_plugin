@@ -269,6 +269,18 @@ class XmppConnection {
     await _channel.invokeMethod('add_owners_in_group', params);
   }
 
+  Future<void> grantOwner(String groupName, String memberJid) async {
+    final params = {"group_name": groupName, "member_jid": memberJid};
+    print('checkGroups grantOwner params: $params');
+    await _channel.invokeMethod('grant_owner_in_group', params);
+  }
+
+  Future<void> revokeOwner(String groupName, String memberJid) async {
+    final params = {"group_name": groupName, "member_jid": memberJid};
+    print('checkGroups revokeOwner params: $params');
+    await _channel.invokeMethod('revoke_owner_in_group', params);
+  }
+
   Future<void> removeOwner(String groupName, List<String> membersJid) async {
     final params = {"group_name": groupName, "members_jid": membersJid};
     print('checkGroups removeOwner params: $params');
