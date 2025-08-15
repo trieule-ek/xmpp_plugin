@@ -204,6 +204,8 @@ public class FlutterXmppConnection implements ConnectionListener {
                 muc.grantAdmin(jidList);
             } else if (groupRole == GroupRole.MEMBER) {
                 muc.grantMembership(jidList);
+            } else if (groupRole == GroupRole.OWNER) {
+                muc.grantOwnership(jidList);
             }
 
             for (Jid jid : jidList) {
