@@ -34,6 +34,8 @@ public class Constants {
     public static final String CUSTOM_MESSAGE = "send_custom_message";
     public static final String ADD_ADMINS_IN_GROUP = "add_admins_in_group";
     public static final String SEND_DELIVERY_ACK = "send_delivery_receipt";
+    public static final String GRANT_OWNER_IN_GROUP = "grant_owner_in_group";
+    public static final String REVOKE_OWNER_IN_GROUP = "revoke_owner_in_group";
     public static final String ADD_OWNERS_IN_GROUP = "add_owners_in_group";
     public static final String ADD_MEMBERS_IN_GROUP = "add_members_in_group";
     public static final String CUSTOM_GROUP_MESSAGE = "send_customgroup_message";
@@ -89,6 +91,7 @@ public class Constants {
     public static final String RECEIPT_ID = "receiptId";
     public static final String CONNECTION = "connection";
     public static final String CUSTOM_TEXT = "customText";
+    public static final String MEMBER_JID = "member_jid";
     public static final String MEMBERS_JID = "members_jid";
     public static final String CHANNEL = "flutter_xmpp/method";
     public static final String authenticated = "authenticated";

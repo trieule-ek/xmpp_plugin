@@ -443,6 +443,55 @@ extension XMPPController {
         }
         objXMPPRoom.editPrivileges(arrUsers)
     }
+
+    /// Grant-or-Revoke Owner in XMPPRoom
+    func grantRevokeOwnerInRoom(withUserRole vRole : xmppMUCUserType,
+                               withRoomName roomName: String,
+                               withUser user : String,
+                               withStrem: XMPPStream) {
+        if roomName.trim().isEmpty {
+            print("\(#function) | roomName nil/empty")
+            return
+        }
+        if user.trim().isEmpty {
+            print("\(#function) | Users nil/empty")
+            return
+        }
+        /// Get RoomInfo
+        guard let index = self.arrGroups.firstIndex(where: { (objGroup) -> Bool in
+            return objGroup.name == roomName
+        }) else {
+            print("\(#function) | Not found XMPPRoom object in user created/join GroupList")
+            return
+        }
+        let objRoom = self.arrGroups[index]
+        guard let objXMPPRoom = objRoom.objRoomXMPP else {
+            print("\(#function) | User not succesfully created/join XMPPRoom.")
+            return
+        }
+        printLog("\(#function) | perform activity of XMPPRoom Member - room: \(roomName) | role: \(vRole)")
+        
+        /// Set Users role value
+        var vUserRole : String = ""
+        switch vRole {
+            case .Member: vUserRole = xmppMUCRole.Member
+
+            case .Admin: vUserRole = xmppMUCRole.Admin
+                
+            case .Owner: vUserRole = xmppMUCRole.Owner
+        }
+        if vUserRole.trim().isEmpty {
+            print("\(#function) | Member role is empty/nil")
+            return
+        }
+        
+        let userJIDString = getJIDNameForUser(user.trim(), withStrem: withStrem)
+        let eleUser : XMLElement = XMLElement.init(name: "item")
+        eleUser.addAttribute(withName: "affiliation", stringValue: vUserRole.trim())
+        eleUser.addAttribute(withName: "jid", stringValue: userJIDString)
+        
+        objXMPPRoom.editPrivileges([eleUser])
+    }
     
     func getAllMemeberInfo(withItems items: [Any], withUserRole vRole : xmppMUCUserType) {
         var arrUsers : [String] = []

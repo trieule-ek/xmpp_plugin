@@ -39,6 +39,8 @@ struct pluginMethod {
     static let addMembersInGroup : String           = "add_members_in_group"
     static let addAdminsInGroup : String            = "add_admins_in_group"
     static let addOwnersInGroup : String            = "add_owners_in_group"
+    static let grantOwnerInGroup : String           = "grant_owner_in_group"
+    static let revokeOwnerInGroup : String          = "revoke_owner_in_group"
     static let removeMembersInGroup : String        = "remove_members_from_group"
     static let removeAdminsInGroup : String         = "remove_admins_from_group"
     static let removeOwnersInGroup : String         = "remove_owners_from_group"

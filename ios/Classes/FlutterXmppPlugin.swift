@@ -87,6 +87,12 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
             
         case pluginMethod.addOwnersInGroup:
             self.performAddRemoveMembersInGroupActivity(withMemeberType: .Owner, actionType: .Add, call, result)
+
+        case pluginMethod.grantOwnerInGroup:
+            self.performGrantRevokeOwnerInGroupActivity(withMemeberType: .Owner, call, result)
+
+        case pluginMethod.revokeOwnerInGroup:
+            self.performGrantRevokeOwnerInGroupActivity(withMemeberType: .Member, call, result)
             
         case pluginMethod.getMembers:
             self.performGetMembersInGroupActivity(withMemeberType: .Member, call, result)
@@ -382,6 +388,26 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
                                                    actionType: actionType,
                                                    withRoomName: vGroupName,
                                                    withUsers: membersJids,
+                                                   withStrem: self.objXMPP.xmppStream)
+        
+        result(xmppConstants.SUCCESS)
+    }
+
+    func performGrantRevokeOwnerInGroupActivity(withMemeberType type : xmppMUCUserType,
+                                              _ call: FlutterMethodCall,
+                                              _ result: @escaping FlutterResult) {
+        guard let vData = call.arguments as? [String : Any] else {
+            result(xmppConstants.ERROR)
+            return
+        }
+        let vMethod : String = call.method.trim()
+        let vGroupName : String = (vData["group_name"] as? String ?? "").trim()
+        let memberJid  : String = (vData["member_jid"] as? String ?? "").trim()
+        printLog("\(#function) | \(vMethod) | arguments: \(vData) | vGroupName: \(vGroupName) | memberJid : \(memberJid)")
+        
+        APP_DELEGATE.objXMPP.grantRevokeOwnerInRoom(withUserRole: type,
+                                                   withRoomName: vGroupName,
+                                                   withUser: memberJid,
                                                    withStrem: self.objXMPP.xmppStream)
         
         result(xmppConstants.SUCCESS)
