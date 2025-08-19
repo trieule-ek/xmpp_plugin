@@ -237,19 +237,21 @@ extension XMPPController {
 
         //------------------------------------------------------------------------
         //Other Chat message received
-        let vMessType : String = (objMess.type ?? xmppChatType.NORMAL).trim()
+        var vMessType : String = (objMess.type ?? xmppChatType.NORMAL).trim()
+        if objMess.element(forName: "x", xmlns: xmppConstants.jabberXConference) != nil {
+            vMessType = xmppChatType.GROUPCHAT;
+        }
         switch vMessType {
+            case xmppChatType.NORMAL:
+                if(body.isEmpty != true){
+                    self.handel_ChatMessage(objMess, withType: vMessType, withStrem: sender)
+                }
 
-        case xmppChatType.NORMAL:
-            if(body.isEmpty != true){
+                self.handelNormalChatMessage(objMess, withStrem: sender)
+                break;
+
+            default:
                 self.handel_ChatMessage(objMess, withType: vMessType, withStrem: sender)
-            }
-
-            self.handelNormalChatMessage(objMess, withStrem: sender)
-            break;
-
-        default:
-            self.handel_ChatMessage(objMess, withType: vMessType, withStrem: sender)
         }
     }
 

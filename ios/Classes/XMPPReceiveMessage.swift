@@ -33,7 +33,7 @@ extension XMPPController {
             return
         }
         let subject = extractSubject(from: message)
-        let statusCode = extractStatusCode(from: message)
+        var statusCode = extractStatusCode(from: message)
         let urls = extractUrlsFromMessage(message)
         var mediaURL: String = ""
         if (!urls.isEmpty) {
@@ -41,14 +41,25 @@ extension XMPPController {
         }
         
         let customElement : String = message.getCustomElementInfo(withKey: eleCustom.Kay)
-        let vMessType : String = type
+        var vMessType : String = type
+        var senderJid = objMess.senderJid
+        var body = objMess.message
+
+        if let xElement = message.element(forName: "x", xmlns: xmppConstants.jabberXConference),
+            let roomJIDString = xElement.attributeStringValue(forName: "jid") {
+            statusCode = "1112"
+            body = "[[INVITE_MEMBER_TO_GROUP]]" + roomJIDString + "[[/INVITE_MEMBER_TO_GROUP]]";
+            vMessType = "groupchat";
+            senderJid = roomJIDString + "/" + senderJid;
+        }
+
         let dicDate = ["type" : pluginMessType.Message,
                        "id" : objMess.id,
-                       "from" : objMess.senderJid,
-                       "body" : objMess.message,
+                       "from" : senderJid,
+                       "body" : body,
                        "customText" : customElement,
                        "msgtype" : vMessType,
-                       "senderJid": objMess.senderJid,
+                       "senderJid": senderJid,
                        "delayTime" : stamp,
                        "subject": subject,
                        "mediaURL": mediaURL,
