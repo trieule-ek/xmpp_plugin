@@ -87,6 +87,7 @@ struct xmppConstants {
     static let errorMessOfMUC : String = "Owner privileges required"
     
     static let presence : String = "presence"
+    static let jabberXConference : String = "jabber:x:conference";
 }
 struct xmppConnStatus {
     static let Processing : String = "connecting"
