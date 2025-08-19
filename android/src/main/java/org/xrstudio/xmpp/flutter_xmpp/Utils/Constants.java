@@ -199,4 +199,5 @@ public class Constants {
     public static final String URN_XMPP_RECEIPTS = "urn:xmpp:receipts";
     public static final String URN_XMPP_DELAY = "urn:xmpp:delay";
     public static final String DELAY_TIME = "delayTime";
+    public static final String JABBER_X_CONFERENCE = "jabber:x:conference";
 }

@@ -29,6 +29,7 @@ import org.xrstudio.xmpp.flutter_xmpp.Enum.ConnectionState;
 import org.xrstudio.xmpp.flutter_xmpp.Enum.ErrorState;
 import org.xrstudio.xmpp.flutter_xmpp.Enum.SuccessState;
 import org.xrstudio.xmpp.flutter_xmpp.FlutterXmppPlugin;
+import org.jivesoftware.smackx.muc.packet.GroupChatInvitation;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -255,6 +256,16 @@ public class Utils {
             mUser = mUser.split(Constants.SYMBOL_COMPARE_JID)[0];
         }
         
+        String type = message.getType().toString();
+        if (message.toXML().toString().contains(Constants.JABBER_X_CONFERENCE)) {
+            GroupChatInvitation invite = GroupChatInvitation.from(message);
+            String room = invite.getRoomAddress();
+            statusCode = "1112";
+            body = "[[INVITE_MEMBER_TO_GROUP]]" + room + "[[/INVITE_MEMBER_TO_GROUP]]";
+            type = "groupchat";
+            from = room + "/" + from;
+        }
+        
         if (!from.equals(mUser)) {
             //Bundle up the intent and send the broadcast.
             Intent intent = new Intent(Constants.RECEIVE_MESSAGE);
@@ -262,7 +273,7 @@ public class Utils {
             intent.putExtra(Constants.BUNDLE_FROM_JID, from);
             intent.putExtra(Constants.BUNDLE_MESSAGE_BODY, body);
             intent.putExtra(Constants.BUNDLE_MESSAGE_PARAMS, msgId);
-            intent.putExtra(Constants.BUNDLE_MESSAGE_TYPE, message.getType().toString());
+            intent.putExtra(Constants.BUNDLE_MESSAGE_TYPE, type);
             intent.putExtra(Constants.BUNDLE_MESSAGE_SENDER_JID, from);
             intent.putExtra(Constants.MEDIA_URL, mediaURL);
             intent.putExtra(Constants.CUSTOM_TEXT, customText);
@@ -353,7 +364,6 @@ public class Utils {
                 String url = xml.substring(startClose + 1, end).trim();
                 if (!url.isEmpty()) {
                     urls.add(url);
-                    Utils.printLog("Found URL: " + url);
                 }
                 currentIndex = end + endTag.length(); // Move past this tag
             } else {
@@ -374,7 +384,6 @@ public class Utils {
             int startClose = xml.indexOf("'", start);
             if (startClose != -1) {
                 String code = xml.substring(startClose + 1, startClose + 5).trim();
-                Utils.printLog("Found status code: " + code);
                 return code;
             }
         }
@@ -394,7 +403,6 @@ public class Utils {
             int startClose = xml.indexOf(">", start);
             if (startClose != -1 && startClose < end) {
                 String subject = xml.substring(startClose + 1, end).trim();
-                Utils.printLog("Found subject: " + subject);
                 return subject;
             }
         }
