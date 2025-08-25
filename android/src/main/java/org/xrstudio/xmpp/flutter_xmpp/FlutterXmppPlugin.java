@@ -166,7 +166,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         presenceBuild.put(Constants.PRESENCE_TYPE, presenceType);
                         presenceBuild.put(Constants.PRESENCE_MODE, presenceMode);
 
-                        Utils.printLog("presenceBuild: " + presenceBuild);
+                        // Utils.printLog("presenceBuild: " + presenceBuild);
 
                         events.success(presenceBuild);
                         break;
@@ -303,7 +303,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
             @Override
             public void onListen(Object args, EventChannel.EventSink events) {
                 if (successBroadcastReceiver == null) {
-                    Utils.printLog(" adding success listener: ");
+                    // Utils.printLog(" adding success listener: ");
                     successBroadcastReceiver = getSuccessBroadCast(events);
                     IntentFilter filter = new IntentFilter();
                     filter.addAction(Constants.SUCCESS_MESSAGE);
@@ -314,7 +314,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
             @Override
             public void onCancel(Object o) {
                 if (successBroadcastReceiver != null) {
-                    Utils.printLog(" cancelling success listener: ");
+                    // Utils.printLog(" cancelling success listener: ");
                     activity.unregisterReceiver(successBroadcastReceiver);
                     successBroadcastReceiver = null;
                 }
@@ -326,7 +326,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
             @Override
             public void onListen(Object args, EventChannel.EventSink errorEvents) {
                 if (errorBroadcastReceiver == null) {
-                    Utils.printLog(" adding error listener: ");
+                    // Utils.printLog(" adding error listener: ");
                     errorBroadcastReceiver = getErrorBroadCast(errorEvents);
                     IntentFilter filter = new IntentFilter();
                     filter.addAction(Constants.ERROR_MESSAGE);
@@ -337,7 +337,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
             @Override
             public void onCancel(Object o) {
                 if (errorBroadcastReceiver != null) {
-                    Utils.printLog(" cancelling error listener: ");
+                    // Utils.printLog(" cancelling error listener: ");
                     activity.unregisterReceiver(errorBroadcastReceiver);
                     errorBroadcastReceiver = null;
                 }
@@ -349,7 +349,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
             @Override
             public void onListen(Object args, EventChannel.EventSink connectionEvents) {
                 if (connectionBroadcastReceiver == null) {
-                    Utils.printLog(" adding connection listener: ");
+                    // Utils.printLog(" adding connection listener: ");
                     connectionBroadcastReceiver = getConnectionBroadCast(connectionEvents);
                     IntentFilter filter = new IntentFilter();
                     filter.addAction(Constants.CONNECTION_STATE_MESSAGE);
@@ -360,7 +360,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
             @Override
             public void onCancel(Object o) {
                 if (connectionBroadcastReceiver != null) {
-                    Utils.printLog(" cancelling connection listener: ");
+                    // Utils.printLog(" cancelling connection listener: ");
                     activity.unregisterReceiver(connectionBroadcastReceiver);
                     connectionBroadcastReceiver = null;
                 }
@@ -416,7 +416,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         logout();
         method_channel.setMethodCallHandler(null);
-        Utils.printLog(" onDetachedFromEngine: ");
+        // Utils.printLog(" onDetachedFromEngine: ");
     }
 
     // stream
@@ -424,7 +424,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
     public void onListen(Object auth, EventChannel.EventSink eventSink) {
 
         if (mBroadcastReceiver == null) {
-            Utils.printLog(" adding listener: ");
+            // Utils.printLog(" adding listener: ");
             mBroadcastReceiver = get_message(eventSink);
             IntentFilter filter = new IntentFilter();
             filter.addAction(Constants.RECEIVE_MESSAGE);
@@ -439,7 +439,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
     public void onCancel(Object o) {
 
         if (mBroadcastReceiver != null) {
-            Utils.printLog(" cancelling listener: ");
+            // Utils.printLog(" cancelling listener: ");
             activity.unregisterReceiver(mBroadcastReceiver);
             mBroadcastReceiver = null;
         }
@@ -450,7 +450,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
     @Override
     public void onMethodCall(MethodCall call, Result result) {
 
-        Utils.printLog(" onMethodCall call: " + call.method);
+        // Utils.printLog(" onMethodCall call: " + call.method);
         // Check if login method was called.
 
         Utils.addLogInStorage("Action: methodReceiveFromFlutter, NativeMethod: " + call.method.toString() + " Content: " + call.arguments + "");
@@ -711,7 +711,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                 String requestBefore = call.argument(Constants.requestBefore);
                 String requestSince = call.argument(Constants.requestSince);
                 String limit = call.argument(Constants.limit);
-                Utils.printLog("userJId " + userJid + " Before : " + requestBefore + " since " + requestSince + " limit " + limit);
+                // Utils.printLog("userJId " + userJid + " Before : " + requestBefore + " since " + requestSince + " limit " + limit);
                 MAMManager.requestMAM(userJid, requestBefore, requestSince, limit);
                 result.success("SUCCESS");
 
@@ -721,7 +721,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
 
                 String typingJid = call.argument(Constants.userJid);
                 String typingStatus = call.argument(Constants.typingStatus);
-                Utils.printLog("userJId " + typingJid + " Typing Status : " + typingStatus);
+                // Utils.printLog("userJId " + typingJid + " Typing Status : " + typingStatus);
                 FlutterXmppConnection.updateChatState(typingJid, typingStatus);
                 result.success("SUCCESS");
                 break;
@@ -730,7 +730,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
 
                 String presenceType = call.argument(Constants.PRESENCE_TYPE);
                 String presenceMode = call.argument(Constants.PRESENCE_MODE);
-                Utils.printLog("presenceType : " + presenceType + " , Presence Mode : " + presenceMode);
+                // Utils.printLog("presenceType : " + presenceType + " , Presence Mode : " + presenceMode);
                 FlutterXmppConnection.updatePresence(presenceType, presenceMode);
                 result.success("SUCCESS");
                 break;
