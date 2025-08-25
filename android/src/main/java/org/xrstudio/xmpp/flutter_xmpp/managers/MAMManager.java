@@ -59,13 +59,13 @@ public class MAMManager {
                     }
                 }
 
-                Utils.printLog("MAM query Args " + queryArgs.toString());
+                // Utils.printLog("MAM query Args " + queryArgs.toString());
                 org.jivesoftware.smackx.mam.MamManager.MamQuery query = mamManager.queryArchive(queryArgs.build());
                 List<Message> messageList = query.getMessages();
                 Collections.reverse(messageList);
 
                 for (Message message : messageList) {
-                    Utils.printLog("Received Message " + message.toXML());
+                    // Utils.printLog("Received Message " + message.toXML());
                     Utils.broadcastMessageToFlutter(FlutterXmppConnection.getApplicationContext(), message);
                 }
 

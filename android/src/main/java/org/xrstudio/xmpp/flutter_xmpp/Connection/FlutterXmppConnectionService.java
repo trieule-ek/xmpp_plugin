@@ -56,14 +56,14 @@ public class FlutterXmppConnectionService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        Utils.printLog(" onCreate(): ");
+        // Utils.printLog(" onCreate(): ");
 
     }
 
     private void initConnection() {
         try {
 
-            Utils.printLog(" initConnection(): ");
+            // Utils.printLog(" initConnection(): ");
 
             if (mConnection == null) {
                 mConnection = new FlutterXmppConnection(this, this.jid_user, this.password, this.host, this.port, requireSSLConnection, autoDeliveryReceipt, useStreamManagement, automaticReconnection);
@@ -74,7 +74,7 @@ public class FlutterXmppConnectionService extends Service {
         } catch (IOException | SmackException | XMPPException e) {
             FlutterXmppConnectionService.sConnectionState = ConnectionState.FAILED;
             Utils.broadcastConnectionMessageToFlutter(this, ConnectionState.FAILED, "Something went wrong while connecting ,make sure the credentials are right and try again.");
-            Utils.printLog(" Something went wrong while connecting ,make sure the credentials are right and try again: ");
+            // Utils.printLog(" Something went wrong while connecting ,make sure the credentials are right and try again: ");
             e.printStackTrace();
             stopSelf();
         }
@@ -82,7 +82,7 @@ public class FlutterXmppConnectionService extends Service {
 
     public void start() {
 
-        Utils.printLog(" Service Start() function called: ");
+        // Utils.printLog(" Service Start() function called: ");
 
         if (!mActive) {
             mActive = true;
@@ -101,7 +101,7 @@ public class FlutterXmppConnectionService extends Service {
 
     public void stop() {
 
-        Utils.printLog(" stop() :");
+        // Utils.printLog(" stop() :");
 
         mActive = false;
         if (mTHandler != null) {
@@ -117,13 +117,13 @@ public class FlutterXmppConnectionService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Utils.printLog(" onStartCommand(): ");
+        // Utils.printLog(" onStartCommand(): ");
 
         Bundle extras = intent.getExtras();
 
         if (extras == null) {
 
-            Utils.printLog(" Missing User JID/Password/Host/Port: ");
+            // Utils.printLog(" Missing User JID/Password/Host/Port: ");
 
         } else {
             this.jid_user = extras.getString(Constants.JID_USER);
@@ -143,7 +143,7 @@ public class FlutterXmppConnectionService extends Service {
     @Override
     public void onDestroy() {
 
-        Utils.printLog(" onDestroy(): ");
+        // Utils.printLog(" onDestroy(): ");
         super.onDestroy();
         stop();
     }

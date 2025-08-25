@@ -84,7 +84,7 @@ public class FlutterXmppConnection implements ConnectionListener {
     public FlutterXmppConnection(Context context, String jid_user, String password, String host, Integer port, boolean requireSSLConnection,
                                  boolean autoDeliveryReceipt, boolean useStreamManagement, boolean automaticReconnection) {
 
-        Utils.printLog(" Connection Constructor called: ");
+        // Utils.printLog(" Connection Constructor called: ");
 
         mApplicationContext = context.getApplicationContext();
         mPassword = password;
@@ -152,7 +152,7 @@ public class FlutterXmppConnection implements ConnectionListener {
 
             Utils.addLogInStorage("Action: sentCustomMessageToServer, Content: " + xmppMessage.toXML().toString());
 
-            Utils.printLog(" Sent custom message from: " + xmppMessage.toXML() + "  sent.");
+            // Utils.printLog(" Sent custom message from: " + xmppMessage.toXML() + "  sent.");
 
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
@@ -376,7 +376,7 @@ public class FlutterXmppConnection implements ConnectionListener {
         } catch (Exception e) {
             e.printStackTrace();
             String groupCreateError = e.getLocalizedMessage();
-            Utils.printLog(" createMUC : exception: " + groupCreateError);
+            // Utils.printLog(" createMUC : exception: " + groupCreateError);
             Utils.broadcastErrorMessageToFlutter(mApplicationContext, ErrorState.GROUP_CREATION_FAILED, groupCreateError, groupName);
         }
         return isGroupCreatedSuccessfully;
@@ -410,7 +410,7 @@ public class FlutterXmppConnection implements ConnectionListener {
             } catch (Exception e) {
                 e.printStackTrace();
                 String allGroupJoinError = e.getLocalizedMessage();
-                Utils.printLog(" joinAllGroup : exception: " + allGroupJoinError);
+                // Utils.printLog(" joinAllGroup : exception: " + allGroupJoinError);
                 Utils.broadcastErrorMessageToFlutter(mApplicationContext, ErrorState.GROUP_JOINED_FAILED, allGroupJoinError, groupId);
             }
 
@@ -452,7 +452,7 @@ public class FlutterXmppConnection implements ConnectionListener {
             isJoinedSuccessfully = true;
         } catch (Exception e) {
             String groupJoinError = e.getLocalizedMessage();
-            Utils.printLog(" joinGroup : exception: " + groupJoinError);
+            // Utils.printLog(" joinGroup : exception: " + groupJoinError);
             Utils.broadcastErrorMessageToFlutter(mApplicationContext, ErrorState.GROUP_JOINED_FAILED, groupJoinError, groupId);
             e.printStackTrace();
         }
@@ -470,7 +470,7 @@ public class FlutterXmppConnection implements ConnectionListener {
             ChatState chatState = ChatState.valueOf(status);
             message.addExtension(new ChatStateExtension(chatState));
 
-            Utils.printLog("Sending Typing status " + message.toXML());
+            // Utils.printLog("Sending Typing status " + message.toXML());
             mConnection.sendStanza(message);
 
         } catch (Exception e) {
@@ -505,13 +505,13 @@ public class FlutterXmppConnection implements ConnectionListener {
         // Check if the Host address is the ip then set up host and host address.
         if (Utils.validIP(mHost)) {
 
-            Utils.printLog(" connecting via ip: " + Utils.validIP(mHost));
+            // Utils.printLog(" connecting via ip: " + Utils.validIP(mHost));
             InetAddress address = InetAddress.getByName(mHost);
             conf.setHostAddress(address);
             conf.setHost(mHost);
         } else {
 
-            Utils.printLog(" not valid host: ");
+            // Utils.printLog(" not valid host: ");
             conf.setHost(mHost);
         }
 
@@ -522,7 +522,7 @@ public class FlutterXmppConnection implements ConnectionListener {
         conf.setUsernameAndPassword(mUsername, mPassword);
         conf.setResource(mResource);
         conf.setCompressionEnabled(true);
-        conf.enableDefaultDebugger();
+        // conf.enableDefaultDebugger();
 
 
         if (mRequireSSLConnection) {
@@ -542,7 +542,7 @@ public class FlutterXmppConnection implements ConnectionListener {
             conf.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
         }
 
-        Utils.printLog(" connect 1 mServiceName: " + mServiceName + " mHost: " + mHost + " mPort: " + Constants.PORT + " mUsername: " + mUsername + " mPassword: " + mPassword + " mResource:" + mResource);
+        // // Utils.printLog(" connect 1 mServiceName: " + mServiceName + " mHost: " + mHost + " mPort: " + Constants.PORT + " mUsername: " + mUsername + " mPassword: " + mPassword + " mResource:" + mResource);
         //Set up the ui thread broadcast message receiver.
 
 
@@ -553,7 +553,7 @@ public class FlutterXmppConnection implements ConnectionListener {
 
 
 
-            Utils.printLog(" Calling connect(): ");
+            // Utils.printLog(" Calling connect(): ");
             mConnection.connect();
 
             rosterConnection = Roster.getInstanceFor(mConnection);
@@ -596,7 +596,7 @@ public class FlutterXmppConnection implements ConnectionListener {
 
                 //Check if the Intents purpose is to send the message.
                 String action = intent.getAction();
-                Utils.printLog(" action: " + action);
+                // Utils.printLog(" action: " + action);
                 if (action.equals(Constants.X_SEND_MESSAGE)
                         || action.equals(Constants.GROUP_SEND_MESSAGE)) {
                     //Send the message.
@@ -663,7 +663,7 @@ public class FlutterXmppConnection implements ConnectionListener {
 
             Utils.addLogInStorage("Action: sentMessageToServer, Content: " + xmppMessage.toXML().toString());
 
-            Utils.printLog(" Sent message from: " + xmppMessage.toXML() + "  sent.");
+            // Utils.printLog(" Sent message from: " + xmppMessage.toXML() + "  sent.");
 
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
@@ -695,7 +695,7 @@ public class FlutterXmppConnection implements ConnectionListener {
 
     public void disconnect() {
 
-        Utils.printLog(" Disconnecting from server: " + mServiceName);
+        // Utils.printLog(" Disconnecting from server: " + mServiceName);
 
         if (mConnection != null) {
             mConnection.disconnect();
@@ -711,7 +711,7 @@ public class FlutterXmppConnection implements ConnectionListener {
 
     @Override
     public void connected(XMPPConnection connection) {
-        Utils.printLog(" Connected Successfully: ");
+        // Utils.printLog(" Connected Successfully: ");
 
         FlutterXmppConnectionService.sConnectionState = ConnectionState.CONNECTED;
 
@@ -730,7 +730,7 @@ public class FlutterXmppConnection implements ConnectionListener {
 
     @Override
     public void authenticated(XMPPConnection connection, boolean resumed) {
-        Utils.printLog(" Flutter Authenticated Successfully: ");
+        // Utils.printLog(" Flutter Authenticated Successfully: ");
 
         multiUserChatManager = MultiUserChatManager.getInstanceFor(connection);
         FlutterXmppConnectionService.sConnectionState = ConnectionState.AUTHENTICATED;
@@ -751,7 +751,7 @@ public class FlutterXmppConnection implements ConnectionListener {
 
     @Override
     public void connectionClosed() {
-        Utils.printLog(" ConnectionClosed(): ");
+        // Utils.printLog(" ConnectionClosed(): ");
 
         if(FlutterXmppConnectionService.sConnectionState == ConnectionState.FAILED) {
             connectionCloseMessageToFlutter(ConnectionState.FAILED, Constants.FAILED);
@@ -779,7 +779,7 @@ public class FlutterXmppConnection implements ConnectionListener {
 
     @Override
     public void connectionClosedOnError(Exception e) {
-        Utils.printLog(" ConnectionClosedOnError, error:  " + e.toString());
+        // Utils.printLog(" ConnectionClosedOnError, error:  " + e.toString());
 
         FlutterXmppConnectionService.sConnectionState = ConnectionState.FAILED;
 
