@@ -37,6 +37,8 @@ class MessageChat {
 
   bool get hasSubject => subject != null && subject!.trim() != "";
   bool get isMAM => delayTime != null && delayTime!.trim() != "" && delayTime!.trim() != "0"; // 0 - Android | "" - iOS
+  bool get isGroupArchivedMessage => isMAM && time=='0';
+  bool get isGroupRealtimeMessage => (delayTime!.trim() == "" || delayTime!.trim() == "0") && time=='0'; // Android
 
   Map<String, dynamic> toEventData() {
     return {
