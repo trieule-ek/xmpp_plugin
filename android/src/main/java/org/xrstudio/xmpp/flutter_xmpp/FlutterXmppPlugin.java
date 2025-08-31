@@ -111,6 +111,8 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         String statusCode = extras != null ? (String)extras.get(Constants.STATUS_CODE) : "";
                         String subject = extras != null ? (String)extras.get(Constants.SUBJECT) : "";
 
+                        if (msgId == null || msgId.isEmpty()) break;
+
                         Map<String, Object> build = new HashMap<>();
                         build.put(Constants.TYPE, metaInfo);
                         build.put(Constants.ID, msgId);

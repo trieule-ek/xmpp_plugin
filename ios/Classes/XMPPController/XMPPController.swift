@@ -136,16 +136,14 @@ class XMPPController : NSObject {
     func getUserId(usingXMPPStream objXMPPStream : XMPPStream) -> String {
         var vUserId : String = ""
         if let value = objXMPPStream.myJID?.description {
-            vUserId = (value.components(separatedBy: "@").first ?? "").trim()
+            vUserId = value.trim()
         }
         return vUserId
     }
 
     func getJIDNameForUser(_ jid : String, withStrem: XMPPStream) -> String {
         var vHost : String = ""
-        if let value = withStrem.hostName { vHost = value.trim() }
-        if jid.contains(vHost) { return jid }
-        return [jid, "@", vHost].joined(separator: "")
+        return jid
     }
 
     //MARK:- User status
