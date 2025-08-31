@@ -310,7 +310,7 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
         
         APP_DELEGATE.singalCallBack = result
         APP_DELEGATE.objXMPP.createRoom(withRooms: [objGroupInfo], withStrem: self.objXMPP.xmppStream)
-        //result(xmppConstants.SUCCESS)
+        result(true)
     }
     
     func performJoinMUCGroupsActivity(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
