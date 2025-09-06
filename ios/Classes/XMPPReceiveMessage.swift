@@ -28,7 +28,7 @@ extension XMPPController {
         var objMess : Message = Message.init()
         objMess.initWithMessage(message: message)
         let vId : String = objMess.id.trim()
-        if vId.count == 0 {
+        if (vId.count == 0 || vId.count < 36) {
             print("\(#function) | Message Id nil")
             return
         }

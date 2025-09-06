@@ -339,11 +339,7 @@ extension XMPPController {
                        forRoomName roomName: String,
                        withStrem : XMPPStream,
                        objXMPP : XMPPController) {
-        var vOnlyRoomName : String = roomName
-        if roomName.contains(xmppConstants.Conference) {
-            vOnlyRoomName = roomName.components(separatedBy: "@").first ?? roomName
-        }
-        if vOnlyRoomName.trim().isEmpty {
+        if roomName.trim().isEmpty {
             print("\(#function) | roomName nil/empty")
             
             self.sendMemberList(withUsers: [])
@@ -351,7 +347,7 @@ extension XMPPController {
         }
         
         guard let index = self.arrGroups.firstIndex(where: { (objGroup) -> Bool in
-            return objGroup.name == vOnlyRoomName
+            return objGroup.name == roomName
         }) else {
             print("\(#function) | Not found XMPPRoom object in user created/joined GroupList")
             
@@ -410,38 +406,45 @@ extension XMPPController {
         /// Set Users role value
         var vUserRole : String = ""
         switch vRole {
-        case .Member:
-            vUserRole = (actionType == .Add) ? xmppMUCRole.Member : xmppMUCRole.None
-            
-        case .Admin:
-            vUserRole = (actionType == .Add) ? xmppMUCRole.Admin : xmppMUCRole.Member
-            
-        case .Owner:
-            vUserRole = (actionType == .Add) ? xmppMUCRole.Owner : xmppMUCRole.Member
+            case .Member:
+                vUserRole = (actionType == .Add) ? xmppMUCRole.Member : xmppMUCRole.None
+                
+            case .Admin:
+                vUserRole = (actionType == .Add) ? xmppMUCRole.Admin : xmppMUCRole.Member
+                
+            case .Owner:
+                vUserRole = (actionType == .Add) ? xmppMUCRole.Owner : xmppMUCRole.Member
         }
         if vUserRole.trim().isEmpty {
             print("\(#function) | Member role is empty/nil")
             return
         }
+
+        guard let roomJID = XMPPJID(string: roomName) else {
+            print("\(#function) | Invalid XMPPRoom Jid: \(roomName)")
+            return
+        }
+
+        // Create the IQ
+        let iq = XMPPIQ(type: "set", to: roomJID, elementID: withStrem.generateUUID, child: nil)
         
-        /// Create Users List
-        var arrUsers: [DDXMLElement] = []
+        // Query with muc#admin
+        let query = DDXMLElement(name: "query", xmlns: "http://jabber.org/protocol/muc#admin")
+        
         for user in arrUser {
             if user.trim().isEmpty {
                 print("\(#function) | UserJidString is empty/nil")
                 continue
             }
-            let userJIDString = getJIDNameForUser(user.trim(), withStrem: withStrem)
-            let eleUser : XMLElement = XMLElement.init(name: "item")
-            eleUser.addAttribute(withName: "affiliation", stringValue: vUserRole.trim())
-            eleUser.addAttribute(withName: "jid", stringValue: userJIDString)
-            arrUsers.append(eleUser)
+
+            let item = DDXMLElement(name: "item")
+            item.addAttribute(withName: "affiliation", stringValue: vUserRole.trim())
+            item.addAttribute(withName: "jid", stringValue: user.trim())
+            query.addChild(item)
         }
-        if arrUsers.isEmpty {
-            print("\(#function) | Add users list in Circle are empty/nil")
-            return
-        }
-        objXMPPRoom.editPrivileges(arrUsers)
+
+        iq.addChild(query)
+        withStrem.send(iq)
     }
 
     /// Grant-or-Revoke Owner in XMPPRoom
@@ -484,13 +487,23 @@ extension XMPPController {
             print("\(#function) | Member role is empty/nil")
             return
         }
+
+        guard let roomJID = XMPPJID(string: roomName.trim()) else {
+            print("\(#function) | Invalid XMPPRoom Jid: \(roomName)")
+            return
+        }
+
+        let iq = XMPPIQ(type: "set", to: roomJID, elementID: withStrem.generateUUID, child: nil)
+    
+        let query = DDXMLElement(name: "query", xmlns: "http://jabber.org/protocol/muc#admin")
         
-        let userJIDString = getJIDNameForUser(user.trim(), withStrem: withStrem)
-        let eleUser : XMLElement = XMLElement.init(name: "item")
-        eleUser.addAttribute(withName: "affiliation", stringValue: vUserRole.trim())
-        eleUser.addAttribute(withName: "jid", stringValue: userJIDString)
+        let item = DDXMLElement(name: "item")
+        item.addAttribute(withName: "affiliation", stringValue: vUserRole.trim())
+        item.addAttribute(withName: "jid", stringValue: user)
+        query.addChild(item)
         
-        objXMPPRoom.editPrivileges([eleUser])
+        iq.addChild(query)
+        withStrem.send(iq)
     }
     
     func getAllMemeberInfo(withItems items: [Any], withUserRole vRole : xmppMUCUserType) {
