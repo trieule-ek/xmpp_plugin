@@ -243,9 +243,6 @@ public class FlutterXmppConnection implements ConnectionListener {
 
             List<Jid> jidList = new ArrayList<>();
             for (String memberJid : membersJid) {
-                if (!memberJid.contains(mHost)) {
-                    memberJid = memberJid + Constants.SYMBOL_COMPARE_JID + mHost;
-                }
                 Jid jid = JidCreate.from(memberJid);
                 jidList.add(jid);
             }
