@@ -38,12 +38,11 @@ extension XMPPController : XMPPRoomDelegate {
             self.addUpdateGroupInfo(objGroupInfo: objRoom)
             
             let roomMS : XMPPRoomMemoryStorage = XMPPRoomMemoryStorage.init()
-            let xmppRoom = XMPPRoom.init(roomStorage: roomMS, jid: roomJID)
+            let xmppRoom = XMPPRoom.init(roomStorage: roomMS, jid: roomJID, dispatchQueue: DispatchQueue.main)
             xmppRoom.activate(withStrem)
             xmppRoom.addDelegate(self, delegateQueue: DispatchQueue.main)
             
-            let history = getXMPPRoomHistiry(withTime: 0)
-            xmppRoom.join(usingNickname: vUserId, history: history)
+            xmppRoom.join(usingNickname: vUserId, history: nil)
             
             xmppRoom.fetchConfigurationForm()
             printLog("\(#function) | perform activity of create XMPPRoom | \(roomName)")
@@ -389,18 +388,6 @@ extension XMPPController {
             print("\(#function) | Users nil/empty")
             return
         }
-        /// Get RoomInfo
-        guard let index = self.arrGroups.firstIndex(where: { (objGroup) -> Bool in
-            return objGroup.name == roomName
-        }) else {
-            print("\(#function) | Not found XMPPRoom object in user created/join GroupList")
-            return
-        }
-        let objRoom = self.arrGroups[index]
-        guard let objXMPPRoom = objRoom.objRoomXMPP else {
-            print("\(#function) | User not succesfully created/join XMPPRoom.")
-            return
-        }
         printLog("\(#function) | perform activity of XMPPRoom Member - \(actionType) | room: \(roomName) | role: \(vRole)")
         
         /// Set Users role value
@@ -458,18 +445,6 @@ extension XMPPController {
         }
         if user.trim().isEmpty {
             print("\(#function) | Users nil/empty")
-            return
-        }
-        /// Get RoomInfo
-        guard let index = self.arrGroups.firstIndex(where: { (objGroup) -> Bool in
-            return objGroup.name == roomName
-        }) else {
-            print("\(#function) | Not found XMPPRoom object in user created/join GroupList")
-            return
-        }
-        let objRoom = self.arrGroups[index]
-        guard let objXMPPRoom = objRoom.objRoomXMPP else {
-            print("\(#function) | User not succesfully created/join XMPPRoom.")
             return
         }
         printLog("\(#function) | perform activity of XMPPRoom Member - room: \(roomName) | role: \(vRole)")
