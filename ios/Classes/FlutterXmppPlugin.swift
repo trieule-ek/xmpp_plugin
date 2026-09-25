@@ -20,6 +20,7 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
         }
     }
     var singalCallBack : FlutterResult?
+    var createMUCCallbacks : [String : FlutterResult] = [:]
     
     var objXMPPLogger : xmppLoggerInfo?
     
@@ -308,9 +309,8 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
         objGroupInfo.name = vGroupName
         objGroupInfo.isPersistent = isPersistent
         
-        APP_DELEGATE.singalCallBack = result
+        APP_DELEGATE.createMUCCallbacks[APP_DELEGATE.objXMPP.mucKey(vGroupName)] = result
         APP_DELEGATE.objXMPP.createRoom(withRooms: [objGroupInfo], withStrem: self.objXMPP.xmppStream)
-        result(true)
     }
     
     func performJoinMUCGroupsActivity(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {

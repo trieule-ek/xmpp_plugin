@@ -168,15 +168,6 @@ extension XMPPController {
         }
     }
     
-    func sendMUCCreateStatus(_ isSuccess: Bool) {
-        printLog("\(#function) | isSuccess: \(isSuccess)")
-        addLogger(.sentMessageToFlutter, isSuccess)
-        
-        if let callBack = APP_DELEGATE.singalCallBack {
-            callBack(isSuccess)
-        }
-    }
-    
     func sendPresence(withJid jid: String, type: String, move: String) {
         let dicParam = ["type" : xmppConstants.presence,
                         "from" : jid,
