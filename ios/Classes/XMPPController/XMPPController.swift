@@ -214,9 +214,6 @@ extension XMPPController {
     func xmppStream(_ sender: XMPPStream, didReceive message: XMPPMessage) {
         addLogger(.receiveMessageFromServer, message)
         printLog("\(#function) | didReceive message: \(message)")
-        if message.type == "error" {
-            printLog("[MUC] message error id=\(message.elementID ?? "") from=\(message.fromStr ?? "") error=\(message.element(forName: "error")?.xmlString ?? "") t=\(Date().timeIntervalSince1970)")
-        }
 
         //------------------------------------------------------------------------
         // Manange MAM Message
@@ -257,7 +254,7 @@ extension XMPPController {
     }
 
     func xmppStream(_ sender: XMPPStream, didFailToSend message: XMPPMessage, error: Error) {
-        printLog("[MUC] didFailToSend id=\(message.elementID ?? "") to=\(message.toStr ?? "") error=\(error.localizedDescription)")
+        printLog("didFailToSend message : \(error.localizedDescription)")
     }
 }
 

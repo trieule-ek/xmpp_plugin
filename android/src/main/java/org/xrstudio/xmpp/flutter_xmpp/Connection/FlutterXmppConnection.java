@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
@@ -345,15 +344,11 @@ public class FlutterXmppConnection implements ConnectionListener {
         boolean isGroupCreatedSuccessfully = false;
         try {
 
-            String roomJid = Utils.getRoomIdWithDomainName(groupName, mHost);
-            Log.d("XMPP_MUC", "createMUC before create room=" + roomJid + " t=" + System.currentTimeMillis());
-            MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(roomJid));
+            MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(Utils.getRoomIdWithDomainName(groupName, mHost)));
             multiUserChat.create(Resourcepart.from(mUsername));
-            Log.d("XMPP_MUC", "createMUC after create room=" + roomJid + " joined=" + multiUserChat.isJoined() + " t=" + System.currentTimeMillis());
             
             if (persistent.equals(Constants.TRUE)) {
                 Form form = multiUserChat.getConfigurationForm();
-                Log.d("XMPP_MUC", "createMUC config form fetched, mam field present=" + (form.getField(Constants.MUC_MAM) != null));
                 FillableForm answerForm = form.getFillableForm();
                 answerForm.setAnswer(Constants.MUC_PERSISTENT_ROOM, true);
                 answerForm.setAnswer(Constants.MUC_PUBLIC_ROOM, true);
@@ -370,16 +365,13 @@ public class FlutterXmppConnection implements ConnectionListener {
                 answerForm.setAnswer(Constants.MUC_VOICE_REQUEST, true);
                 answerForm.setAnswer(Constants.MUC_ALLOW_SUBSCRIPTION, false);  // allow_subscription
                 answerForm.setAnswer(Constants.MUC_MAM, true);
-                Log.d("XMPP_MUC", "createMUC before sendConfigurationForm room=" + roomJid + " t=" + System.currentTimeMillis());
                 multiUserChat.sendConfigurationForm(answerForm);
-                Log.d("XMPP_MUC", "createMUC CONFIGURED room=" + roomJid + " t=" + System.currentTimeMillis());
             }
 
             isGroupCreatedSuccessfully = true;
 
         } catch (Exception e) {
             e.printStackTrace();
-            Log.d("XMPP_MUC", "createMUC FAILED group=" + groupName + " error=" + e);
             String groupCreateError = e.getLocalizedMessage();
             // Utils.printLog(" createMUC : exception: " + groupCreateError);
             Utils.broadcastErrorMessageToFlutter(mApplicationContext, ErrorState.GROUP_CREATION_FAILED, groupCreateError, groupName);
@@ -440,7 +432,6 @@ public class FlutterXmppConnection implements ConnectionListener {
 
             MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat((EntityBareJid) JidCreate.from(groupId));
             Resourcepart resourcepart = Resourcepart.from(mUsername);
-            Log.d("XMPP_MUC", "joinGroupWithResponse room=" + groupId + " alreadyJoined=" + multiUserChat.isJoined() + " t=" + System.currentTimeMillis());
 
             long currentTime = new Date().getTime();
             long lastMessageTime = Long.parseLong(lastMsgTime);
@@ -456,9 +447,7 @@ public class FlutterXmppConnection implements ConnectionListener {
             }
 
             isJoinedSuccessfully = true;
-            Log.d("XMPP_MUC", "joinGroupWithResponse room=" + groupId + " joined=" + multiUserChat.isJoined());
         } catch (Exception e) {
-            Log.d("XMPP_MUC", "joinGroupWithResponse FAILED room=" + groupId + " error=" + e);
             String groupJoinError = e.getLocalizedMessage();
             // Utils.printLog(" joinGroup : exception: " + groupJoinError);
             Utils.broadcastErrorMessageToFlutter(mApplicationContext, ErrorState.GROUP_JOINED_FAILED, groupJoinError, groupId);
@@ -653,7 +642,6 @@ public class FlutterXmppConnection implements ConnectionListener {
                 xmppMessage.setTo(jid);
                 EntityBareJid mucJid = (EntityBareJid) JidCreate.bareFrom(Utils.getRoomIdWithDomainName(toJid, mHost));
                 MultiUserChat muc = multiUserChatManager.getMultiUserChat(mucJid);
-                Log.d("XMPP_MUC", "send groupchat id=" + msgId + " to=" + mucJid + " mucJoined=" + muc.isJoined() + " t=" + System.currentTimeMillis());
                 if (!subject.isEmpty()) {
                     xmppMessage.setSubject(subject);
                     muc.sendMessage(xmppMessage);
@@ -675,13 +663,10 @@ public class FlutterXmppConnection implements ConnectionListener {
             // Utils.printLog(" Sent message from: " + xmppMessage.toXML() + "  sent.");
 
         } catch (SmackException.NotConnectedException e) {
-            Log.d("XMPP_MUC", "send FAILED (not connected) id=" + msgId + " to=" + toJid + " error=" + e);
             e.printStackTrace();
         } catch (InterruptedException e) {
-            Log.d("XMPP_MUC", "send FAILED (interrupted) id=" + msgId + " to=" + toJid + " error=" + e);
             e.printStackTrace();
         } catch (Exception e) {
-            Log.d("XMPP_MUC", "send FAILED id=" + msgId + " to=" + toJid + " error=" + e);
             e.printStackTrace();
         }
     }

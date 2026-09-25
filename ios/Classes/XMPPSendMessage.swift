@@ -52,9 +52,6 @@ extension XMPPController {
         if xmpp_AutoDeliveryReceipt {
             xmppMessage.addReceiptRequest()
         }
-        if isGroup {
-            printLog("[MUC] send groupchat id=\(messageId) to=\(reciverJID) authenticated=\(withStrem.isAuthenticated) t=\(Date().timeIntervalSince1970)")
-        }
         withStrem.send(xmppMessage)
         
         addLogger(isCustom ? .sentCustomMessageToServer : .sentMessageToServer, xmppMessage)
