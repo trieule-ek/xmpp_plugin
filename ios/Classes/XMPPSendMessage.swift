@@ -52,6 +52,9 @@ extension XMPPController {
         if xmpp_AutoDeliveryReceipt {
             xmppMessage.addReceiptRequest()
         }
+        if isGroup {
+            printLog("[MUC] send groupchat id=\(messageId) to=\(reciverJID) authenticated=\(withStrem.isAuthenticated) t=\(Date().timeIntervalSince1970)")
+        }
         withStrem.send(xmppMessage)
         
         addLogger(isCustom ? .sentCustomMessageToServer : .sentMessageToServer, xmppMessage)
@@ -162,15 +165,6 @@ extension XMPPController {
         if( isSuccess){
             APP_DELEGATE.updateMUCJoinStatus(withRoomname: roomName, status: isSuccess, error: error)
         }
-        
-        if let callBack = APP_DELEGATE.singalCallBack {
-            callBack(isSuccess)
-        }
-    }
-    
-    func sendMUCCreateStatus(_ isSuccess: Bool) {
-        printLog("\(#function) | isSuccess: \(isSuccess)")
-        addLogger(.sentMessageToFlutter, isSuccess)
         
         if let callBack = APP_DELEGATE.singalCallBack {
             callBack(isSuccess)

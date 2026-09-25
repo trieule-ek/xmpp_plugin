@@ -16,13 +16,13 @@ extension XMPPController : XMPPRoomDelegate {
             if roomName.isEmpty {
                 print("\(#function) | roomName nil/empty")
                 
-                sendMUCCreateStatus(false)
+                completeCreateMUC(room: roomName, success: false)
                 return
             }
             guard let roomJID = XMPPJID(string: roomName) else {
                 print("\(#function) | Invalid XMPPRoom Jid: \(roomName)")
                 
-                sendMUCCreateStatus(false)
+                completeCreateMUC(room: roomName, success: false)
                 return
             }
             
@@ -30,7 +30,7 @@ extension XMPPController : XMPPRoomDelegate {
             if vUserId.isEmpty {
                 print("\(#function) | XMPP UserId is nil/empty")
                 
-                sendMUCCreateStatus(false)
+                completeCreateMUC(room: roomName, success: false)
                 return
             }
             
@@ -49,7 +49,24 @@ extension XMPPController : XMPPRoomDelegate {
         }
     }
     
+    func mucKey(_ room: String) -> String {
+        return (XMPPJID(string: room.trim())?.bare ?? room.trim()).lowercased()
+    }
+    
+    func completeCreateMUC(room: String, success: Bool) {
+        let key = mucKey(room)
+        guard let callBack = APP_DELEGATE.createMUCCallbacks.removeValue(forKey: key) else { return }
+        printLog("[MUC] create_muc result room=\(key) success=\(success) t=\(Date().timeIntervalSince1970)")
+        callBack(success)
+    }
+    
     func joinRoom(roomName: String, withStrem : XMPPStream){
+        if let objGroup = self.arrGroups.first(where: { $0.name == roomName }),
+           objGroup.objRoomXMPP?.isJoined == true {
+            printLog("[MUC] join skipped, already joined room=\(roomName)")
+            sendMUCJoinStatus(true, roomName, "")
+            return
+        }
         if roomName.trim().isEmpty {
             print("\(#function) | roomName nil/empty")
             sendMUCJoinStatus(false,roomName, "Roomname can't be empty")
@@ -159,10 +176,10 @@ extension XMPPController : XMPPRoomDelegate {
         guard let value = sender.myRoomJID?.bareJID.user else {
             print("\(#function) | XMPPRoom Creating Error | XMPPRoom-Name: \(vRoom)")
             
-            sendMUCCreateStatus(false)
+            completeCreateMUC(room: sender.roomJID.bare, success: false)
             return
         }
-        sendMUCCreateStatus(true)
+        printLog("[MUC] xmppRoomDidCreate room=\(sender.roomJID.bare) t=\(Date().timeIntervalSince1970)")
         
         vRoom = "\(value)"
         printLog("\(#function) | XMPPRoom Created | XMPPRoom-Name: \(vRoom)")
@@ -178,6 +195,7 @@ extension XMPPController : XMPPRoomDelegate {
             return
         }
         vRoom = "\(value)"
+        printLog("[MUC] xmppRoomDidJoin room=\(vRoom) t=\(Date().timeIntervalSince1970)")
         printLog("\(#function) | XMPPRoom Joined | XMPPRoom-Name: \(vRoom)")
         
         sendMUCJoinStatus(true,vRoom,"")
@@ -194,6 +212,8 @@ extension XMPPController : XMPPRoomDelegate {
         if let value = sender.myRoomJID?.bareJID.user { vRoomName = value.trim() }
         
         let newConfiguration = configForm.copy() as? DDXMLElement
+        printLog("[MUC] didFetchConfigurationForm room=\(sender.roomJID.bare) t=\(Date().timeIntervalSince1970)")
+        var hasMamField : Bool = false
         
         let vKey : String = "field"
         guard let arrRoomConfig = newConfiguration?.elements(forName: vKey) as? [DDXMLElement] else {
@@ -277,6 +297,7 @@ extension XMPPController : XMPPRoomDelegate {
                     printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
 
                 case "mam":
+                    hasMamField = true
                     field.removeChild(at: 0)
                     field.addChild(DDXMLElement(name: "value", stringValue: "1"))
                     printLog("\(#function) | XMPPRoom Configuration | \(roomProparty) | update-Config: \(field)")
@@ -286,22 +307,33 @@ extension XMPPController : XMPPRoomDelegate {
                     break
             }
         }
+        if !hasMamField {
+            printLog("[MUC] mam field NOT offered by server | room=\(sender.roomJID.bare)")
+        }
+        printLog("[MUC] configureRoom submitted room=\(sender.roomJID.bare) t=\(Date().timeIntervalSince1970)")
         sender.configureRoom(usingOptions: newConfiguration)
     }
     
     // MARK: - Room - IQ
     func xmppRoom(_ sender: XMPPRoom, didConfigure iqResult: XMPPIQ) {
+        printLog("[MUC] CONFIGURED room=\(sender.roomJID.bare) t=\(Date().timeIntervalSince1970)")
         printLog("\(#function) | XMPPRoom: \(sender) | iqResult: \(iqResult)")
+        completeCreateMUC(room: sender.roomJID.bare, success: true)
     }
     
     func xmppRoom(_ sender: XMPPRoom, didNotConfigure iqResult: XMPPIQ) {
+        printLog("[MUC] CONFIGURE FAILED room=\(sender.roomJID.bare) iq=\(iqResult) t=\(Date().timeIntervalSince1970)")
         printLog("\(#function) | XMPPRoom: \(sender) | iqResult: \(iqResult)")
+        completeCreateMUC(room: sender.roomJID.bare, success: false)
     }
     
     func xmppStream(_ sender: XMPPStream, didReceive iq: XMPPIQ) -> Bool {
         printLog("\(#function) | XMPPRoom: \(sender) | iq: \(iq)")
         
         if let eleError = iq.childErrorElement {
+            if let vFrom = iq.from?.bare, APP_DELEGATE.createMUCCallbacks[mucKey(vFrom)] != nil {
+                completeCreateMUC(room: vFrom, success: false)
+            }
             var vCode : String = ""
             var vErrorMess : String = ""
             

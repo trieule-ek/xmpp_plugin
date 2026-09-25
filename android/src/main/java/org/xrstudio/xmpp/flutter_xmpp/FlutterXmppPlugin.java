@@ -202,6 +202,8 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
 
                 activity.sendBroadcast(intent);
             }
+        } else {
+            Log.d("XMPP_MUC", "sendMessage dropped: state=" + FlutterXmppConnectionService.getState() + " method=" + method + " id=" + msgId + " to=" + toUser);
         }
     }
 

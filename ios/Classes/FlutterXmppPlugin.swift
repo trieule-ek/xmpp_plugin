@@ -20,6 +20,7 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
         }
     }
     var singalCallBack : FlutterResult?
+    var createMUCCallbacks : [String : FlutterResult] = [:]
     
     var objXMPPLogger : xmppLoggerInfo?
     
@@ -308,9 +309,9 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
         objGroupInfo.name = vGroupName
         objGroupInfo.isPersistent = isPersistent
         
-        APP_DELEGATE.singalCallBack = result
+        printLog("[MUC] create_muc room=\(vGroupName) waiting for configuration t=\(Date().timeIntervalSince1970)")
+        APP_DELEGATE.createMUCCallbacks[APP_DELEGATE.objXMPP.mucKey(vGroupName)] = result
         APP_DELEGATE.objXMPP.createRoom(withRooms: [objGroupInfo], withStrem: self.objXMPP.xmppStream)
-        result(true)
     }
     
     func performJoinMUCGroupsActivity(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
@@ -348,6 +349,7 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
             APP_DELEGATE.updateMUCJoinStatus(withRoomname: vRoomName, status: false, error : "Invalid Room Name")
             return
         }
+        printLog("[MUC] join_muc_group room=\(vRoomName) overwriting singalCallBack=\(APP_DELEGATE.singalCallBack != nil) t=\(Date().timeIntervalSince1970)")
         APP_DELEGATE.singalCallBack = result
         APP_DELEGATE.objXMPP.joinRoom(roomName: vRoomName, withStrem: self.objXMPP.xmppStream)
         //result(true)
