@@ -37,6 +37,8 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
 
     public static final Boolean DEBUG = true;
     private static Context activity;
+    private static Context appContext;
+    private boolean attachedToActivity = false;
     private String id;
     private String time;
     private String body;
@@ -191,7 +193,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                 intent.putExtra(Constants.BUNDLE_MESSAGE_SENDER_TIME, time);
                 intent.putExtra(Constants.BUNDLE_SUBJECT, subject);
 
-                activity.sendBroadcast(intent);
+                appContext.sendBroadcast(intent);
             } else {
                 Intent intent = new Intent(Constants.X_SEND_MESSAGE);
                 intent.putExtra(Constants.BUNDLE_MESSAGE_BODY, body);
@@ -200,7 +202,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                 intent.putExtra(Constants.BUNDLE_MESSAGE_SENDER_TIME, time);
                 intent.putExtra(Constants.BUNDLE_SUBJECT, subject);
 
-                activity.sendBroadcast(intent);
+                appContext.sendBroadcast(intent);
             }
         }
     }
@@ -295,6 +297,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        appContext = flutterPluginBinding.getApplicationContext();
         method_channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), Constants.CHANNEL);
         method_channel.setMethodCallHandler(this);
         event_channel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), Constants.CHANNEL_STREAM);
@@ -404,6 +407,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
         // You can obtain an Activity reference with
 
         activity = binding.getActivity();
+        attachedToActivity = true;
 
         //
         // You can listen for Lifecycle changes with
@@ -416,7 +420,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-        logout();
+        if (attachedToActivity) logout();
         method_channel.setMethodCallHandler(null);
         // Utils.printLog(" onDetachedFromEngine: ");
     }
@@ -813,7 +817,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
         // Check if the user is already connected or not ? if not then start login process.
         final ConnectionState connState = FlutterXmppConnectionService.getState();
         if (connState.equals(ConnectionState.DISCONNECTED) || connState.equals(ConnectionState.FAILED)) {
-            Intent i = new Intent(activity, FlutterXmppConnectionService.class);
+            Intent i = new Intent(appContext, FlutterXmppConnectionService.class);
             i.putExtra(Constants.JID_USER, jid_user);
             i.putExtra(Constants.PASSWORD, password);
             i.putExtra(Constants.HOST, host);
@@ -822,15 +826,19 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
             i.putExtra(Constants.REQUIRE_SSL_CONNECTION, requireSSLConnection);
             i.putExtra(Constants.USER_STREAM_MANAGEMENT, useStreamManagement);
             i.putExtra(Constants.AUTOMATIC_RECONNECTION, automaticReconnection);
-            activity.startService(i);
+            try {
+                appContext.startService(i);
+            } catch (IllegalStateException | SecurityException e) {
+                Log.w("FlutterXmpp", "Cannot start the connection service while the app is in the background", e);
+            }
         }
     }
 
     private void logout() {
         // Check if user is connected to xmpp ? if yes then break connection.
         if (FlutterXmppConnectionService.getState().equals(ConnectionState.AUTHENTICATED)) {
-            Intent i1 = new Intent(activity, FlutterXmppConnectionService.class);
-            activity.stopService(i1);
+            Intent i1 = new Intent(appContext, FlutterXmppConnectionService.class);
+            appContext.stopService(i1);
         }
     }
 
