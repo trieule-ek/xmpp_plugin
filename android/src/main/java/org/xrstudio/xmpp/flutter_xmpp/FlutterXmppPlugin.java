@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
@@ -23,6 +25,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -64,6 +68,27 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
     private BroadcastReceiver connectionBroadcastReceiver = null;
     private boolean requireSSLConnection = false, autoDeliveryReceipt = false, automaticReconnection = true, useStreamManagement = true;
 
+    private static final ExecutorService groupExecutor = Executors.newSingleThreadExecutor();
+    private static final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
+    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    private interface BlockingCall {
+        Object run() throws Exception;
+    }
+
+    // Smack request/response calls block until the server answers (up to the reply timeout),
+    // so they must never run on the platform thread that handles method calls.
+    private static void runOffMain(ExecutorService executor, Result result, BlockingCall call) {
+        executor.execute(() -> {
+            try {
+                Object value = call.run();
+                mainHandler.post(() -> result.success(value));
+            } catch (Exception e) {
+                mainHandler.post(() -> result.error("FAILED", e.getMessage(), null));
+            }
+        });
+    }
+
     private static BroadcastReceiver get_message(final EventChannel.EventSink events) {
         return new BroadcastReceiver() {
             @Override
@@ -78,8 +103,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         connectionBuild.put(Constants.TYPE, Constants.CONNECTION);
                         connectionBuild.put(Constants.STATUS, Constants.connected);
 
-                        Utils.addLogInStorage("Action: sentMessageToFlutter, Content: " + connectionBuild.toString());
-
+                        if (Utils.isLoggingEnabled()) Utils.addLogInStorage("Action: sentMessageToFlutter, Content: " + connectionBuild.toString());
                         events.success(connectionBuild);
                         break;
 
@@ -90,8 +114,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         authBuild.put(Constants.TYPE, Constants.CONNECTION);
                         authBuild.put(Constants.STATUS, Constants.authenticated);
 
-                        Utils.addLogInStorage("Action: sentMessageToFlutter, Content: " + authBuild.toString());
-
+                        if (Utils.isLoggingEnabled()) Utils.addLogInStorage("Action: sentMessageToFlutter, Content: " + authBuild.toString());
                         events.success(authBuild);
                         break;
 
@@ -130,8 +153,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         build.put(Constants.STATUS_CODE, statusCode);
                         build.put(Constants.SUBJECT, subject);
 
-                        Utils.addLogInStorage("Action: sentMessageToFlutter, Content: " + build.toString());
-                        Log.d("TAG", " RECEIVE_MESSAGE-->> " + build.toString());
+                        if (Utils.isLoggingEnabled()) Utils.addLogInStorage("Action: sentMessageToFlutter, Content: " + build.toString());
 
                         events.success(build);
 
@@ -231,8 +253,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         successBuild.put(Constants.TYPE, successType);
                         successBuild.put(Constants.FROM, from);
 
-                        Utils.addLogInStorage("Action: sentSuccessMessageToFlutter, Content: " + successBuild.toString());
-
+                        if (Utils.isLoggingEnabled()) Utils.addLogInStorage("Action: sentSuccessMessageToFlutter, Content: " + successBuild.toString());
                         events.success(successBuild);
                         break;
 
@@ -259,8 +280,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         errorBuild.put(Constants.EXCEPTION, error);
                         errorBuild.put(Constants.TYPE, errorType);
 
-                        Utils.addLogInStorage("Action: sentErrorMessageToFlutter, Content: " + errorBuild.toString());
-
+                        if (Utils.isLoggingEnabled()) Utils.addLogInStorage("Action: sentErrorMessageToFlutter, Content: " + errorBuild.toString());
                         errorEvents.success(errorBuild);
                         break;
 
@@ -285,8 +305,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         connectionStateBuild.put(Constants.TYPE, connectionType);
                         connectionStateBuild.put(Constants.ERROR, connectionError);
 
-                        Utils.addLogInStorage("Action: sentConnectionMessageToFlutter, Content: " + connectionStateBuild.toString());
-
+                        if (Utils.isLoggingEnabled()) Utils.addLogInStorage("Action: sentConnectionMessageToFlutter, Content: " + connectionStateBuild.toString());
                         connectionEvents.success(connectionStateBuild);
                         break;
 
@@ -459,14 +478,14 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
         // Utils.printLog(" onMethodCall call: " + call.method);
         // Check if login method was called.
 
-        Utils.addLogInStorage("Action: methodReceiveFromFlutter, NativeMethod: " + call.method.toString() + " Content: " + call.arguments + "");
-
+        if (Utils.isLoggingEnabled()) Utils.addLogInStorage("Action: methodReceiveFromFlutter, NativeMethod: " + call.method.toString() + " Content: " + call.arguments + "");
         switch (call.method) {
 
             case Constants.LOGIN:
 
                 if (!call.hasArgument(Constants.USER_JID) || !call.hasArgument(Constants.PASSWORD) || !call.hasArgument(Constants.HOST)) {
                     result.error("MISSING", "Missing auth.", null);
+                    return;
                 }
 
                 jid_user = call.argument(Constants.USER_JID).toString();
@@ -513,6 +532,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                 // Handle sending message.
                 if (!call.hasArgument(Constants.TO_JID) || !call.hasArgument(Constants.BODY) || !call.hasArgument(Constants.ID) || !call.hasArgument(Constants.SUBJECT)) {
                     result.error("MISSING", "Missing argument to_jid / body / id chat / subject.", null);
+                    return;
                 }
 
                 to_jid = call.argument(Constants.TO_JID);
@@ -534,25 +554,20 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
 
                 if (!call.hasArgument(Constants.ALL_GROUPS_IDS)) {
                     result.error("MISSING", "Missing argument all_groups_ids.", null);
+                    return;
                 }
                 ArrayList<String> allGroupsIds = call.argument(Constants.ALL_GROUPS_IDS);
-
-                String response = FlutterXmppConnection.joinAllGroups(allGroupsIds);
-                result.success(response);
+                runOffMain(groupExecutor, result, () -> FlutterXmppConnection.joinAllGroups(allGroupsIds));
                 break;
 
             case Constants.JOIN_MUC_GROUP:
 
-                boolean isJoined = false;
                 if (!call.hasArgument(Constants.GROUP_ID)) {
                     result.error("MISSING", "Missing argument group_id.", null);
+                    return;
                 }
                 String group_id = call.argument(Constants.GROUP_ID);
-
-                if (!group_id.isEmpty()) {
-                    isJoined = FlutterXmppConnection.joinGroupWithResponse(group_id);
-                }
-                result.success(isJoined);
+                runOffMain(groupExecutor, result, () -> !group_id.isEmpty() && FlutterXmppConnection.joinGroupWithResponse(group_id));
                 break;
 
             case Constants.CREATE_MUC:
@@ -560,14 +575,14 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                 String group_name = call.argument(Constants.GROUP_NAME);
                 String persistent = call.argument(Constants.PERSISTENT);
 
-                boolean responses = FlutterXmppConnection.createMUC(group_name, persistent);
-                result.success(responses);
+                runOffMain(groupExecutor, result, () -> FlutterXmppConnection.createMUC(group_name, persistent));
                 break;
 
             case Constants.CUSTOM_MESSAGE:
                 // Handle sending message.
                 if (!call.hasArgument(Constants.TO_JID) || !call.hasArgument(Constants.BODY) || !call.hasArgument(Constants.ID)) {
                     result.error("MISSING", "Missing argument to_jid / body / id chat.", null);
+                    return;
                 }
 
                 to_jid = call.argument(Constants.TO_JID);
@@ -589,6 +604,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                 // Handle sending message.
                 if (!call.hasArgument(Constants.TO_JID) || !call.hasArgument(Constants.BODY) || !call.hasArgument(Constants.ID)) {
                     result.error("MISSING", "Missing argument to_jid / body / id chat.", null);
+                    return;
                 }
 
                 to_jid = call.argument(Constants.TO_JID);
@@ -619,96 +635,94 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
 
             case Constants.ADD_MEMBERS_IN_GROUP:
 
-                groupName = call.argument(Constants.GROUP_NAME);
-                membersJid = call.argument(Constants.MEMBERS_JID);
-
-                FlutterXmppConnection.manageAddMembersInGroup(GroupRole.MEMBER, groupName, membersJid);
-
-                result.success(Constants.SUCCESS);
+                String addMembersGroup = call.argument(Constants.GROUP_NAME);
+                ArrayList<String> addMembersJids = call.argument(Constants.MEMBERS_JID);
+                runOffMain(groupExecutor, result, () -> {
+                    FlutterXmppConnection.manageAddMembersInGroup(GroupRole.MEMBER, addMembersGroup, addMembersJids);
+                    return Constants.SUCCESS;
+                });
                 break;
 
             case Constants.ADD_ADMINS_IN_GROUP:
 
-                groupName = call.argument(Constants.GROUP_NAME);
-                membersJid = call.argument(Constants.MEMBERS_JID);
-
-                FlutterXmppConnection.manageAddMembersInGroup(GroupRole.ADMIN, groupName, membersJid);
-
-                result.success(Constants.SUCCESS);
+                String addAdminsGroup = call.argument(Constants.GROUP_NAME);
+                ArrayList<String> addAdminsJids = call.argument(Constants.MEMBERS_JID);
+                runOffMain(groupExecutor, result, () -> {
+                    FlutterXmppConnection.manageAddMembersInGroup(GroupRole.ADMIN, addAdminsGroup, addAdminsJids);
+                    return Constants.SUCCESS;
+                });
                 break;
 
             case Constants.REMOVE_MEMBERS_FROM_GROUP:
 
-                groupName = call.argument(Constants.GROUP_NAME);
-                membersJid = call.argument(Constants.MEMBERS_JID);
-
-                FlutterXmppConnection.manageRemoveFromGroup(GroupRole.MEMBER, groupName, membersJid);
-
-                result.success(Constants.SUCCESS);
+                String removeMembersGroup = call.argument(Constants.GROUP_NAME);
+                ArrayList<String> removeMembersJids = call.argument(Constants.MEMBERS_JID);
+                runOffMain(groupExecutor, result, () -> {
+                    FlutterXmppConnection.manageRemoveFromGroup(GroupRole.MEMBER, removeMembersGroup, removeMembersJids);
+                    return Constants.SUCCESS;
+                });
                 break;
 
             case Constants.REMOVE_ADMINS_FROM_GROUP:
 
-                groupName = call.argument(Constants.GROUP_NAME);
-                membersJid = call.argument(Constants.MEMBERS_JID);
-
-                FlutterXmppConnection.manageRemoveFromGroup(GroupRole.ADMIN, groupName, membersJid);
-
-                result.success(Constants.SUCCESS);
+                String removeAdminsGroup = call.argument(Constants.GROUP_NAME);
+                ArrayList<String> removeAdminsJids = call.argument(Constants.MEMBERS_JID);
+                runOffMain(groupExecutor, result, () -> {
+                    FlutterXmppConnection.manageRemoveFromGroup(GroupRole.ADMIN, removeAdminsGroup, removeAdminsJids);
+                    return Constants.SUCCESS;
+                });
                 break;
 
             case Constants.ADD_OWNERS_IN_GROUP:
 
-                groupName = call.argument(Constants.GROUP_NAME);
-                membersJid = call.argument(Constants.MEMBERS_JID);
-
-                FlutterXmppConnection.manageAddMembersInGroup(GroupRole.OWNER, groupName, membersJid);
-
-                result.success(Constants.SUCCESS);
+                String addOwnersGroup = call.argument(Constants.GROUP_NAME);
+                ArrayList<String> addOwnersJids = call.argument(Constants.MEMBERS_JID);
+                runOffMain(groupExecutor, result, () -> {
+                    FlutterXmppConnection.manageAddMembersInGroup(GroupRole.OWNER, addOwnersGroup, addOwnersJids);
+                    return Constants.SUCCESS;
+                });
                 break;
 
             case Constants.GRANT_OWNER_IN_GROUP:
 
-                groupName = call.argument(Constants.GROUP_NAME);
-                memberJid = call.argument(Constants.MEMBER_JID);
-
-                FlutterXmppConnection.grantOwnerInGroup(groupName, memberJid);
-
-                result.success(Constants.SUCCESS);
+                String grantGroup = call.argument(Constants.GROUP_NAME);
+                String grantJid = call.argument(Constants.MEMBER_JID);
+                runOffMain(groupExecutor, result, () -> {
+                    FlutterXmppConnection.grantOwnerInGroup(grantGroup, grantJid);
+                    return Constants.SUCCESS;
+                });
                 break;
 
             case Constants.REVOKE_OWNER_IN_GROUP:
 
-                groupName = call.argument(Constants.GROUP_NAME);
-                memberJid = call.argument(Constants.MEMBER_JID);
-
-                FlutterXmppConnection.revokeOwnerInGroup(groupName, memberJid);
-
-                result.success(Constants.SUCCESS);
+                String revokeGroup = call.argument(Constants.GROUP_NAME);
+                String revokeJid = call.argument(Constants.MEMBER_JID);
+                runOffMain(groupExecutor, result, () -> {
+                    FlutterXmppConnection.revokeOwnerInGroup(revokeGroup, revokeJid);
+                    return Constants.SUCCESS;
+                });
                 break;
 
             case Constants.REMOVE_OWNERS_FROM_GROUP:
 
-                groupName = call.argument(Constants.GROUP_NAME);
-                membersJid = call.argument(Constants.MEMBERS_JID);
-
-                FlutterXmppConnection.manageRemoveFromGroup(GroupRole.OWNER, groupName, membersJid);
-
-                result.success(Constants.SUCCESS);
+                String removeOwnersGroup = call.argument(Constants.GROUP_NAME);
+                ArrayList<String> removeOwnersJids = call.argument(Constants.MEMBERS_JID);
+                runOffMain(groupExecutor, result, () -> {
+                    FlutterXmppConnection.manageRemoveFromGroup(GroupRole.OWNER, removeOwnersGroup, removeOwnersJids);
+                    return Constants.SUCCESS;
+                });
                 break;
 
             case Constants.GET_OWNERS:
 
-                groupName = call.argument(Constants.GROUP_NAME);
-                jidList = FlutterXmppConnection.getMembersOrAdminsOrOwners(GroupRole.OWNER, groupName);
-                result.success(jidList);
+                String ownersGroup = call.argument(Constants.GROUP_NAME);
+                runOffMain(queryExecutor, result, () -> FlutterXmppConnection.getMembersOrAdminsOrOwners(GroupRole.OWNER, ownersGroup));
                 break;
 
             case Constants.GET_ADMINS:
 
-                groupName = call.argument(Constants.GROUP_NAME);
-                jidList = FlutterXmppConnection.getMembersOrAdminsOrOwners(GroupRole.ADMIN, groupName);
-                result.success(jidList);
+                String adminsGroup = call.argument(Constants.GROUP_NAME);
+                runOffMain(queryExecutor, result, () -> FlutterXmppConnection.getMembersOrAdminsOrOwners(GroupRole.ADMIN, adminsGroup));
                 break;
 
             case Constants.GET_MAM:
@@ -718,8 +732,10 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                 String requestSince = call.argument(Constants.requestSince);
                 String limit = call.argument(Constants.limit);
                 // Utils.printLog("userJId " + userJid + " Before : " + requestBefore + " since " + requestSince + " limit " + limit);
-                MAMManager.requestMAM(userJid, requestBefore, requestSince, limit);
-                result.success("SUCCESS");
+                runOffMain(queryExecutor, result, () -> {
+                    MAMManager.requestMAM(userJid, requestBefore, requestSince, limit);
+                    return "SUCCESS";
+                });
 
                 break;
 
@@ -749,9 +765,8 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
 
             case Constants.GET_MEMBERS:
 
-                groupName = call.argument(Constants.GROUP_NAME);
-                jidList = FlutterXmppConnection.getMembersOrAdminsOrOwners(GroupRole.MEMBER, groupName);
-                result.success(jidList);
+                String membersGroup = call.argument(Constants.GROUP_NAME);
+                runOffMain(queryExecutor, result, () -> FlutterXmppConnection.getMembersOrAdminsOrOwners(GroupRole.MEMBER, membersGroup));
                 break;
 
             case Constants.CURRENT_STATE:
@@ -779,30 +794,29 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
 
             case Constants.GET_ONLINE_MEMBER_COUNT:
 
-                groupName = call.argument(Constants.GROUP_NAME);
-                int occupantsSize = FlutterXmppConnection.getOnlineMemberCount(groupName);
-                result.success(occupantsSize);
+                String onlineGroup = call.argument(Constants.GROUP_NAME);
+                runOffMain(queryExecutor, result, () -> FlutterXmppConnection.getOnlineMemberCount(onlineGroup));
                 break;
 
             case Constants.GET_LAST_SEEN:
 
-                userJid = call.argument(Constants.USER_JID);
-                long userLastActivity = FlutterXmppConnection.getLastSeen(userJid);
-                result.success(userLastActivity + "");
+                String lastSeenJid = call.argument(Constants.USER_JID);
+                runOffMain(queryExecutor, result, () -> FlutterXmppConnection.getLastSeen(lastSeenJid) + "");
                 break;
 
 
             case Constants.GET_MY_ROSTERS:
 
-                List<String> getMyRosters = FlutterXmppConnection.getMyRosters();
-                result.success(getMyRosters);
+                runOffMain(queryExecutor, result, FlutterXmppConnection::getMyRosters);
                 break;
 
             case Constants.CREATE_ROSTER:
 
-                userJid = call.argument(Constants.USER_JID);
-                FlutterXmppConnection.createRosterEntry(userJid);
-                result.success(Constants.SUCCESS);
+                String rosterJid = call.argument(Constants.USER_JID);
+                runOffMain(queryExecutor, result, () -> {
+                    FlutterXmppConnection.createRosterEntry(rosterJid);
+                    return Constants.SUCCESS;
+                });
                 break;
 
             default:

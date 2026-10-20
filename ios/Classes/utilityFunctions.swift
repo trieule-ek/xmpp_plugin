@@ -18,17 +18,28 @@ public func getTimeStamp() -> Int64 {
   return Int64(value)
 }
 
-public func getCurretTime() -> String {
+private let logTimeFormatter: DateFormatter = {
     let dateFormat = DateFormatter()
     dateFormat.dateFormat = "yyyy-MM-dd HH:mm:ss.SSSS"
-    return dateFormat.string(from: Date())
+    return dateFormat
+}()
+
+public func getCurretTime() -> String {
+    return logTimeFormatter.string(from: Date())
 }
 
 func printLog<T>(_ message : T) {
+    #if DEBUG
     print(message)
+    #endif
 }
 
 func addLogger(_ logType : LogType, _ value : Any) {
+    let isFileLogEnabled = APP_DELEGATE.objXMPPLogger?.isLogEnable == true
+    #if !DEBUG
+    if !isFileLogEnabled { return }
+    #endif
+
     var vMess : String = "Time: \(getCurretTime().description)\n"
     vMess += "Action: \(logType.rawValue)\n"
     
@@ -49,14 +60,9 @@ func addLogger(_ logType : LogType, _ value : Any) {
     
     //------------------------------------------------------
     //Add Logger in log-file
-    guard let objLogger = APP_DELEGATE.objXMPPLogger else {
-        printLog("\(#function) | Not initialize XMPPLogger")
-        return
+    if isFileLogEnabled {
+        AppLogger.log(vMess)
     }
-    if !objLogger.isLogEnable {
-        printLog("\(#function) | XMPP Logger Disable.")
-    }
-    AppLogger.log(vMess)
 }
 
 class AppLogger {

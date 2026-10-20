@@ -163,7 +163,7 @@ extension XMPPController {
             APP_DELEGATE.updateMUCJoinStatus(withRoomname: roomName, status: isSuccess, error: error)
         }
         
-        if let callBack = APP_DELEGATE.singalCallBack {
+        if let callBack = APP_DELEGATE.joinMUCCallbacks.removeValue(forKey: roomName.lowercased()) {
             callBack(isSuccess)
         }
     }
