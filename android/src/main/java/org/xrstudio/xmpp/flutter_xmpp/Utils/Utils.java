@@ -87,6 +87,10 @@ public class Utils {
         return roomId;
     }
 
+    public static boolean isLoggingEnabled() {
+        return logFilePath != null && !logFilePath.isEmpty();
+    }
+
     public static void addLogInStorage(String text) {
         if (logFilePath == null || logFilePath.isEmpty()) {
             return;
@@ -169,8 +173,7 @@ public class Utils {
 
     public static void broadcastMessageToFlutter(Context mApplicationContext, Message message) {
 
-        Utils.addLogInStorage(" Action: receiveMessageFromServer, Content: " + message.toXML().toString());
-
+        if (Utils.isLoggingEnabled()) Utils.addLogInStorage(" Action: receiveMessageFromServer, Content: " + message.toXML().toString());
         message = parseEventStanzaMessage(message);
         String META_TEXT = Constants.MESSAGE;
         String body = message.getBody();

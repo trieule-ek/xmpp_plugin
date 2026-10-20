@@ -102,7 +102,6 @@ extension XMPPController : XMPPRoomDelegate {
         let history = getXMPPRoomHistiry(withTime: 0)
         xmppRoom.join(usingNickname: vUserId, history: history)
         
-        xmppRoom.fetchConfigurationForm()
         printLog("\(#function) | perform activity of Join XMPPRoom | \(roomName) | userId: \(vUserId) | history: \(history)")
     }
     

@@ -150,8 +150,7 @@ public class FlutterXmppConnection implements ConnectionListener {
                 muc.sendMessage(xmppMessage);
             }
 
-            Utils.addLogInStorage("Action: sentCustomMessageToServer, Content: " + xmppMessage.toXML().toString());
-
+            if (Utils.isLoggingEnabled()) Utils.addLogInStorage("Action: sentCustomMessageToServer, Content: " + xmppMessage.toXML().toString());
             // Utils.printLog(" Sent custom message from: " + xmppMessage.toXML() + "  sent.");
 
         } catch (SmackException.NotConnectedException e) {
@@ -180,8 +179,7 @@ public class FlutterXmppConnection implements ConnectionListener {
 
             mConnection.sendStanza(deliveryMessage);
 
-            Utils.addLogInStorage("Action: sentDeliveryReceiptToServer, Content: " + deliveryMessage.toXML().toString());
-
+            if (Utils.isLoggingEnabled()) Utils.addLogInStorage("Action: sentDeliveryReceiptToServer, Content: " + deliveryMessage.toXML().toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -556,10 +554,8 @@ public class FlutterXmppConnection implements ConnectionListener {
             rosterConnection = Roster.getInstanceFor(mConnection);
             rosterConnection.setSubscriptionMode(Roster.SubscriptionMode.accept_all);
 
-            if (mUseStreamManagement) {
-                mConnection.setUseStreamManagement(true);
-                mConnection.setUseStreamManagementResumption(true);
-            }
+            mConnection.setUseStreamManagement(mUseStreamManagement);
+            mConnection.setUseStreamManagementResumption(mUseStreamManagement);
 
             mConnection.login();
 
@@ -658,8 +654,7 @@ public class FlutterXmppConnection implements ConnectionListener {
                 }
             }
 
-            Utils.addLogInStorage("Action: sentMessageToServer, Content: " + xmppMessage.toXML().toString());
-
+            if (Utils.isLoggingEnabled()) Utils.addLogInStorage("Action: sentMessageToServer, Content: " + xmppMessage.toXML().toString());
             // Utils.printLog(" Sent message from: " + xmppMessage.toXML() + "  sent.");
 
         } catch (SmackException.NotConnectedException e) {

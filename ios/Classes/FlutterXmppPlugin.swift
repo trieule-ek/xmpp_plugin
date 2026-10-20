@@ -21,6 +21,7 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
     }
     var singalCallBack : FlutterResult?
     var createMUCCallbacks : [String : FlutterResult] = [:]
+    var joinMUCCallbacks : [String : FlutterResult] = [:]
     
     var objXMPPLogger : xmppLoggerInfo?
     
@@ -348,7 +349,7 @@ public class FlutterXmppPlugin: NSObject, FlutterPlugin {
             APP_DELEGATE.updateMUCJoinStatus(withRoomname: vRoomName, status: false, error : "Invalid Room Name")
             return
         }
-        APP_DELEGATE.singalCallBack = result
+        APP_DELEGATE.joinMUCCallbacks[vRoomName.lowercased()] = result
         APP_DELEGATE.objXMPP.joinRoom(roomName: vRoomName, withStrem: self.objXMPP.xmppStream)
         //result(true)
     }
