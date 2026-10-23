@@ -76,13 +76,28 @@ public class FlutterXmppConnectionService extends Service {
             Utils.broadcastConnectionMessageToFlutter(this, ConnectionState.FAILED, "Something went wrong while connecting ,make sure the credentials are right and try again.");
             // Utils.printLog(" Something went wrong while connecting ,make sure the credentials are right and try again: ");
             e.printStackTrace();
-            stopSelf();
         }
+    }
+
+    private void reconnect() {
+        if (mConnection != null) {
+            mConnection.disconnect();
+            mConnection = null;
+        }
+        initConnection();
     }
 
     public void start() {
 
         // Utils.printLog(" Service Start() function called: ");
+
+        if (mActive && mTHandler != null) {
+            final ConnectionState state = getState();
+            if (state == ConnectionState.FAILED || state == ConnectionState.DISCONNECTED) {
+                mTHandler.post(this::reconnect);
+            }
+            return;
+        }
 
         if (!mActive) {
             mActive = true;
